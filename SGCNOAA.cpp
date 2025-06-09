@@ -283,7 +283,12 @@ void SGCNOAA::SolarZenitAngle(int latitude, QVector<double>& SD, QVector<double>
 void SGCNOAA::SolarElevationAngle(QVector<double>& SZA, QVector<double>& SEA)
 {
     for (double sza : SZA) {
-        SEA.push_back(90 - sza);
+        if ((90 - sza) >= 0)
+        {
+            SEA.push_back(90 - sza);
+        }
+        else SEA.push_back(0); 
+
     }
 }
 
@@ -294,7 +299,7 @@ void SGCNOAA::AirMass(QVector<double>& SEA, QVector<double>& AM)
     {
         //AM.push_back(1 / cos(SZA[i]));
         //AM.push_back(1 / (sin(SEA[i]) + 0.50572 * pow((6.07995 + SEA[i]), -1.6364)));
-        if (sea < 0) { AM.push_back(-1); }
+        if (sea < 0) { AM.push_back(0); }
         else
         {
             // Переводим угол из градусов в радианы
@@ -385,7 +390,15 @@ void SGCNOAA::SolarAzimuthAngle(QVector<double>& HA, QVector<double>& SZA, int l
 
 void SGCNOAA::getResult()
 {
-    int timezone = 0;
+    QVector<double> TPL_, julian_days_, julian_century_, GMLS_, GMAS_, EEO_, SEoC_, STL_, STA_;
+    QVector<double> SRV_, SAL_, MOE_, OC_, SRA_, SD_, VY_, EOT_, HAS_, SN_, SRT_, SST_, SLD_;
+    QVector<double> TST_, HA_, SZA_,  AAR_,   SAA_;
+	int timezone = 0;	QVector<double>* mass[30] = {
+        &TPL_, &julian_days_, &julian_century_, &GMLS_, &GMAS_, &EEO_, &SEoC_, &STL_, &STA_, &SRV_,
+        &SAL_, &MOE_, &OC_, &SRA_, &SD_, &VY_, &EOT_, &HAS_, &SN_, &SRT_, &SST_, &SLD_,
+        &TST_, &HA_, &SZA_, &SEA_, &AM_, &AAR_, &SECFATMR_, &AMCFATMR_
+    };
+
     Data data(dateTime.date().day(), dateTime.date().month(), dateTime.date().year(),latitude,longitude,timezone);
 	TimePastLocal(TPL_);
 	JulianDay(julian_days_, data, TPL_);

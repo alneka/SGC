@@ -3,6 +3,11 @@
 
 #include "SGCNOAA.h"
 #include <QRegularExpressionValidator>
+#include <QDir>
+#include <QFile>
+#include <QTextStream>
+#include <QMessageBox>
+
 
 SolarGeometryCalculatorNOAA::SolarGeometryCalculatorNOAA(QWidget *parent)
     : QMainWindow(parent)
@@ -20,6 +25,7 @@ SolarGeometryCalculatorNOAA::SolarGeometryCalculatorNOAA(QWidget *parent)
     //ui.le_UTC_End_Date->setValidator(regexValidator);
 
     connect(ui.pb_SGC_start, SIGNAL(clicked()), this, SLOT(InputData()));
+    connect(ui.pb_SGC_AM_Elev_save, SIGNAL(clicked()), this, SLOT(SaveAMElevation()));
     //connect(ui.le_UTC_Start_Date, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::CheckValidationTime(*this));
 }
 
@@ -47,14 +53,23 @@ void SolarGeometryCalculatorNOAA::InputData() {
         int longitude = ui.le_longitude->text().toInt();
         int latitude = ui.le_latitude->text().toInt();
         int interval = ui.le_interval_time->text().toInt();
-
+        interval = 60; // 1 min 
         // 4. Создаём объект SGCNOAA с введёнными параметрами
         SGCNOAA sgcnoaa(dateTime, latitude, longitude, interval);
 
         sgcnoaa.getResult();
-        QVector<double> vec_AM = sgcnoaa.getAM();
-        QVector<double> vec_SEA = sgcnoaa.getSEA();
-        QVector<QVector<double>> SGC = {vec_AM, vec_SEA};
+        
+        //QVector<double> vec_SEA = sgcnoaa.getSEA();
+        QVector<QVector<double>> SGC ;
+		if(ui.cb_isAM->isChecked())
+		{
+            SGC.push_back(sgcnoaa.getAM());
+		}
+        if (ui.cB_isElevation->isChecked())
+        {
+            SGC.push_back(sgcnoaa.getSEA());
+        }
+
         //SGC.push_back(vec_AM);
         ShowTableWidget(SGC);
  /*       QStandardItemModel* model = new QStandardItemModel();
@@ -345,14 +360,54 @@ void SolarGeometryCalculatorNOAA::validateDataSGCInput()
 
 void SolarGeometryCalculatorNOAA::ShowTableWidget(const QVector<QVector<double>> SGCData)
 {
-    ui.tw_SGC->setRowCount(SGCData[0].size());
-    ui.tw_SGC->setColumnCount(SGCData.size());
-   // ui.tw_SGC->setHorizontalHeaderLabels({ "Время (сек)", "Юлианская дата" });
+    if(!SGCData.isEmpty()){
+        ui.tw_SGC->setRowCount(SGCData[0].size());
+        ui.tw_SGC->setColumnCount(SGCData.size());
+        // ui.tw_SGC->setHorizontalHeaderLabels({ "Время (сек)", "Юлианская дата" });
 
-    for (int i = 0; i < SGCData.size(); ++i) {
-        for (int j = 0; j < SGCData[i].size(); ++j) {
-            ui.tw_SGC->setItem(j, i, new QTableWidgetItem(QString::number(SGCData[i][j])));
-            // table->setItem(i, 1, new QTableWidgetItem(QString::number(julianDays[i], 'f', 8)));
+        for (int i = 0; i < SGCData.size(); ++i) {
+            for (int j = 0; j < SGCData[i].size(); ++j) {
+                ui.tw_SGC->setItem(j, i, new QTableWidgetItem(QString::number(SGCData[i][j])));
+                // table->setItem(i, 1, new QTableWidgetItem(QString::number(julianDays[i], 'f', 8)));
+            }
         }
     }
+
+}
+
+void SolarGeometryCalculatorNOAA::SaveAMElevation()
+{
+    const QString& dirName = "AM(Elevation) on long = " + ui.le_longitude->text() + " lat =" + ui.le_latitude->text();
+    QDir dir;
+    if (!dir.exists(dirName)) {
+        if (!dir.mkpath(dirName)) {
+            //QMessageBox::critical(nullptr, QStringLiteral("Ошибка"), QStringLiteral("Не удалось создать папку ") + dirName);
+            return;
+        }
+    }
+    const QString& fileName = "AM(Elevation)_long=" + ui.le_longitude->text() + "_lat =" + ui.le_latitude->text()
+							+ "_time = " + ui.le_UTC_Start_Date->text() + "-" + ui.le_UTC_End_Date->text()+".dat";
+    QString filePath = dirName + "/" + fileName;
+    QFile file(filePath);
+    
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            //QMessageBox::critical(nullptr, QStringLiteral("Ошибка"), QStringLiteral("Не удалось открыть файл: ") + filePath);
+            return;
+        }
+    
+    QTextStream out(&file);
+    int rows = ui.tw_SGC->rowCount();
+    int cols = ui.tw_SGC->columnCount();
+
+    for (int i = 0; i < rows; ++i) {
+        QStringList rowValues;
+        for (int j = 0; j < cols; ++j) {
+            QTableWidgetItem* item = ui.tw_SGC->item(i, j);
+            rowValues << (item ? item->text() : "");
+        }
+        out << rowValues.join("\t") << "\n";
+    }
+
+    file.close();
+    //QMessageBox::information(nullptr, QStringLiteral("Сохранение"), QStringLiteral("Данные сохранены в: ") + filePath);
 }

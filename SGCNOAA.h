@@ -30,15 +30,10 @@ private:
 		int timezone = 0;
 	};
 
-	QVector<double> TPL_, julian_days_, julian_century_, GMLS_, GMAS_, EEO_, SEoC_, STL_, STA_;
-	QVector<double> SRV_, SAL_, MOE_, OC_, SRA_, SD_, VY_, EOT_, HAS_, SN_, SRT_, SST_, SLD_;
-	QVector<double> TST_, HA_, SZA_, SEA_, AM_, AAR_, SECFATMR_, AMCFATMR_, SAA_;
 
-	QVector<double>* mass[30] = {
-		&TPL_, &julian_days_, &julian_century_, &GMLS_, &GMAS_, &EEO_, &SEoC_, &STL_, &STA_, &SRV_,
-		&SAL_, &MOE_, &OC_, &SRA_, &SD_, &VY_, &EOT_, &HAS_, &SN_, &SRT_, &SST_, &SLD_,
-		&TST_, &HA_, &SZA_, &SEA_, &AM_, &AAR_, &SECFATMR_, &AMCFATMR_
-	};
+	QVector<double>  SEA_, AM_,SECFATMR_, AMCFATMR_;
+
+
 	void TimePastLocal(QVector<double>& TPL);
 	void JulianDay(QVector<double>& julian_days, Data& data, QVector<double>& TPL);
 	void JulianCentury(QVector<double>& julian_century, QVector<double>& julian_days);

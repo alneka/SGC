@@ -44,6 +44,7 @@ private slots:
         return true;
     }
     void ShowTableWidget(const QVector<QVector<double>> SGCData);
+    void SaveAMElevation();
 };
 
 
