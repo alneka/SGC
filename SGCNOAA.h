@@ -5,7 +5,7 @@ class SGCNOAA
 {
 public:
 	//  онструктор с параметрами по умолчанию
-	explicit SGCNOAA(QDateTime dateTime, int lat = 0, int lon = 0, int interval = 1);
+	explicit SGCNOAA(QDateTime startDateTime, QDateTime endDateTime, int lat = 0, int lon = 0, int interval = 1);
 
 	const QVector<double>& getAM() const { return AM_; }
 	const QVector<double>& getAMC() const { return AMCFATMR_; }
@@ -15,7 +15,7 @@ public:
 	void getResult();
 
 private:
-	QDateTime dateTime;
+	QDateTime startDateTime, endDateTime;
 	int latitude;
 	int longitude;
 	int interval;

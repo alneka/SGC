@@ -14,32 +14,6 @@
    <string>SolarGeometryCalculatorNOAA</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QLineEdit" name="le_timezone">
-    <property name="geometry">
-     <rect>
-      <x>490</x>
-      <y>110</y>
-      <width>71</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>-6</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="le_month">
-    <property name="geometry">
-     <rect>
-      <x>490</x>
-      <y>50</y>
-      <width>51</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>6</string>
-    </property>
-   </widget>
    <widget class="QLineEdit" name="le_UTC_End_Date">
     <property name="geometry">
      <rect>
@@ -79,24 +53,6 @@
      <string>40</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>440</x>
-      <y>50</y>
-      <width>71</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Месяц:</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="l_longitude">
     <property name="geometry">
      <rect>
@@ -128,40 +84,6 @@
      <string>Выполнить</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="le_day">
-    <property name="geometry">
-     <rect>
-      <x>490</x>
-      <y>20</y>
-      <width>51</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>21</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="le_interval_time">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>200</y>
-      <width>51</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="inputMethodHints">
-     <set>Qt::ImhFormattedNumbersOnly</set>
-    </property>
-    <property name="text">
-     <string>1</string>
-    </property>
-   </widget>
    <widget class="QLineEdit" name="le_UTC_Start_Date">
     <property name="geometry">
      <rect>
@@ -181,55 +103,6 @@
     </property>
     <property name="text">
      <string>2017-01-01 00:00</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="le_year">
-    <property name="geometry">
-     <rect>
-      <x>490</x>
-      <y>80</y>
-      <width>51</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>2010</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>440</x>
-      <y>80</y>
-      <width>71</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Год:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>440</x>
-      <y>20</y>
-      <width>71</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>День:</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="le_longitude">
@@ -266,24 +139,6 @@
     </property>
     <property name="text">
      <string>Широта:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_6">
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>140</y>
-      <width>111</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Временная зона:</string>
     </property>
    </widget>
    <widget class="QLabel" name="l_UTC_Start_Date">
@@ -326,24 +181,6 @@
     </property>
     <property name="text">
      <string>Конечная дата:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="l_interval_time">
-    <property name="geometry">
-     <rect>
-      <x>460</x>
-      <y>160</y>
-      <width>91</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Интервал (сек):</string>
     </property>
    </widget>
    <widget class="QCheckBox" name="cb_isAM">

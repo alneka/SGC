@@ -20,23 +20,42 @@ double tanD(double angle) {
 double toDegrees(double angle) {
     return angle * (180 / M_PI);
 }
-SGCNOAA::SGCNOAA(QDateTime dateTime, int lat, int lon, int interval)
-    : dateTime(dateTime.isValid() ? dateTime : QDateTime::fromString("2017-01-01 00:00", "yyyy-MM-dd HH:mm")),
+SGCNOAA::SGCNOAA(QDateTime startDateTime, QDateTime endDateTime, int lat, int lon, int interval)
+    : startDateTime(startDateTime.isValid() ? startDateTime : QDateTime::fromString("2017-01-01 00:00", "yyyy-MM-dd HH:mm")),
+    endDateTime(endDateTime.isValid() ? endDateTime : QDateTime::fromString("2017-01-01 00:00", "yyyy-MM-dd HH:mm")),
     latitude(lat),
     longitude(lon),
     interval(interval)
 {
 }
 void SGCNOAA::TimePastLocal(QVector<double>& time) {
-    QTime qtime = dateTime.time();
-    
-    double time_ = qtime.hour() *60*60 + qtime.minute()*60;
+    QTime qtimeStart = startDateTime.time();
+    QTime qtimeEnd = endDateTime.time();
+
+    double time_ = qtimeStart.hour() *60 + qtimeStart.minute();
+    //double minutesOfStartTime = (endDateTime.date().year() *  - startDateTime.date().year());
+    //double minutesOfEndTime = (endDateTime.date().year() - startDateTime.date().year());
+    //double delta_months = (endDateTime.date().year() - startDateTime.date().year());
+    //double time_of_end =  qtimeStart.hour() * 60 * 60 + qtimeStart.minute() * 60;
+
+    double secondsStarEnd = qtimeStart.secsTo(qtimeEnd) ;
+    qDebug() << "Start DateTime:" << startDateTime;
+    qDebug() << "Start Time:" << startDateTime.time();
+    qDebug() << "End DateTime:" << endDateTime;
+    qDebug() << "End Time:" << endDateTime.time();
     int finish_time = 1  * 60*24 / (10 * 24 * 6);
     time.clear();
     // Генерируем временные метки с шагом 1 секунда
-    double interv = static_cast<double>(interval) / (10 * 24 * 6);
-    for (double t = time_; t <= finish_time; t += interv) {
-        time.push_back(t);
+    double interv = static_cast<double>(interval) / (10 * 24 * 60*6);
+    //for (double t = time_; t <= finish_time; t += interv) {
+    //for (double t = time_; t <= secondsStarEnd; t += interv) {
+    //    time.push_back(t);
+    //}
+    double startTimeMin = startDateTime.toSecsSinceEpoch()/60;
+    double endTimeMin = endDateTime.toSecsSinceEpoch() / 60;
+    double startToEndTime = (endTimeMin - startTimeMin);
+    for (double t = time_; t <= time_+startToEndTime; t += 1) {
+        time.push_back(t - time_); // или просто t, в зависимости от задачи
     }
 }
 void SGCNOAA::JulianDay(QVector<double>& julian_days, Data& data, QVector<double>& TPL) {
@@ -399,7 +418,7 @@ void SGCNOAA::getResult()
         &TST_, &HA_, &SZA_, &SEA_, &AM_, &AAR_, &SECFATMR_, &AMCFATMR_
     };
 
-    Data data(dateTime.date().day(), dateTime.date().month(), dateTime.date().year(),latitude,longitude,timezone);
+    Data data(startDateTime.date().day(), startDateTime.date().month(), startDateTime.date().year(),latitude,longitude,timezone);
 	TimePastLocal(TPL_);
 	JulianDay(julian_days_, data, TPL_);
 	JulianCentury(julian_century_, julian_days_);

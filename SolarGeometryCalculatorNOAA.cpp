@@ -1,4 +1,4 @@
-
+п»ї
 #include "SolarGeometryCalculatorNOAA.h"
 
 #include "SGCNOAA.h"
@@ -9,18 +9,20 @@
 #include <QMessageBox>
 
 
+#pragma execution_character_set("")
+
 SolarGeometryCalculatorNOAA::SolarGeometryCalculatorNOAA(QWidget *parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
     //QRegularExpression rx("^([0-9]{4}) (0[1-9]|1[0-2]) (0[1-9]|[12][0-9]|3[01]) (0[0-9]|1[0-9]|2[0-3]):([0-5][0-9])$");
-    //QRegularExpressionValidator* regexValidator = new QRegularExpressionValidator(rx, this); // 'this' должен быть QObject*
+    //QRegularExpressionValidator* regexValidator = new QRegularExpressionValidator(rx, this); // 'this' РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ QObject*
     CheckValidationTime(ui.le_UTC_Start_Date, ui.l_UTC_Start_Date);
     CheckValidationTime(ui.le_UTC_End_Date, ui.l_UTC_End_Date);
     CheckValidationLongitude();
     CheckValidationLatitude();
-    CheckValidationIntervalSec();
-    // Предполагается, что ui.le_UTC_Start_Date - это QLineEdit*
+    //CheckValidationIntervalSec();
+    // РџСЂРµРґРїРѕР»Р°РіР°РµС‚СЃСЏ, С‡С‚Рѕ ui.le_UTC_Start_Date - СЌС‚Рѕ QLineEdit*
     //ui.le_UTC_Start_Date->setValidator(regexValidator);
     //ui.le_UTC_End_Date->setValidator(regexValidator);
 
@@ -38,24 +40,27 @@ void SolarGeometryCalculatorNOAA::InputData() {
     	CheckValidationTime(ui.le_UTC_End_Date, ui.l_UTC_End_Date),
 		CheckValidationLongitude(),
 		CheckValidationLatitude(),
-		CheckValidationIntervalSec() };
-
-   if(vec_validate.contains(true))
-    {
-        // 1. Получаем строку даты из пользовательского интерфейса
-        QString dateTimeString = ui.le_UTC_Start_Date->text();
-
-        // 2. Определяем формат строки даты и преобразуем её в QDateTime
+		//CheckValidationIntervalSec()
+		};
+    if (!ui.cB_isElevation->isChecked() && !ui.cB_isElevation->isChecked()) { return; }
+    if(vec_validate.contains(false)) { return; }
+   //if()
+    //{
+        // 1. РџРѕР»СѓС‡Р°РµРј СЃС‚СЂРѕРєСѓ РґР°С‚С‹ РёР· РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРіРѕ РёРЅС‚РµСЂС„РµР№СЃР°
+        QString starDateTimeString = ui.le_UTC_Start_Date->text();
+        QString endDateTimeString = ui.le_UTC_End_Date->text();
+        // 2. РћРїСЂРµРґРµР»СЏРµРј С„РѕСЂРјР°С‚ СЃС‚СЂРѕРєРё РґР°С‚С‹ Рё РїСЂРµРѕР±СЂР°Р·СѓРµРј РµС‘ РІ QDateTime
         QString format = "yyyy-MM-dd HH:mm";
-        QDateTime dateTime = QDateTime::fromString(dateTimeString, format);
-
-        // 3. Считываем широту, долготу и интервал времени
+        QDateTime starDateTime = QDateTime::fromString(starDateTimeString, format);
+        QDateTime endDateTime = QDateTime::fromString(endDateTimeString, format);
+        if (starDateTime > endDateTime) { return; }
+        // 3. РЎС‡РёС‚С‹РІР°РµРј С€РёСЂРѕС‚Сѓ, РґРѕР»РіРѕС‚Сѓ Рё РёРЅС‚РµСЂРІР°Р» РІСЂРµРјРµРЅРё
         int longitude = ui.le_longitude->text().toInt();
         int latitude = ui.le_latitude->text().toInt();
-        int interval = ui.le_interval_time->text().toInt();
-        interval = 60; // 1 min 
-        // 4. Создаём объект SGCNOAA с введёнными параметрами
-        SGCNOAA sgcnoaa(dateTime, latitude, longitude, interval);
+        //int interval = ui.le_interval_time->text().toInt();
+        int interval = 60; // 1 min 
+        // 4. РЎРѕР·РґР°С‘Рј РѕР±СЉРµРєС‚ SGCNOAA СЃ РІРІРµРґС‘РЅРЅС‹РјРё РїР°СЂР°РјРµС‚СЂР°РјРё
+        SGCNOAA sgcnoaa(starDateTime, endDateTime, latitude, longitude, interval);
 
         sgcnoaa.getResult();
         
@@ -80,7 +85,7 @@ void SolarGeometryCalculatorNOAA::InputData() {
         }
 
         ui.listView->setModel(model);*/
-    };
+    //};
 
     //Data data;
     //InData ID;
@@ -171,7 +176,7 @@ void SolarGeometryCalculatorNOAA::InputData() {
     //      GMLS,  GMAS,  EEO,  SEoC,  STL,  STA,  SRV,  SAL,  MOE,
     //      OC,  SRA,  SD,  VY,  EOT,  HAS,  SN,  SRT,  SST,  SLD,
     //      TST,  HA,  SZA,  SEA,  AAR,  SECFATMR,  SAA }) {
-    //    resultVec.push_back(vec[0]);  // добавляем первый элемент в новый вектор
+    //    resultVec.push_back(vec[0]);  // РґРѕР±Р°РІР»СЏРµРј РїРµСЂРІС‹Р№ СЌР»РµРјРµРЅС‚ РІ РЅРѕРІС‹Р№ РІРµРєС‚РѕСЂ
     //}
     //int k = 0;
 }
@@ -182,36 +187,36 @@ bool SolarGeometryCalculatorNOAA::CheckValidationTime(QLineEdit* lineEdit, QLabe
 {
     QString dateTimeString = lineEdit->text();
 
-    // 2. Преобразуем строку в QDateTime
-    // Используем тот же формат, который был задан для ввода и валидации
+    // 2. РџСЂРµРѕР±СЂР°Р·СѓРµРј СЃС‚СЂРѕРєСѓ РІ QDateTime
+    // РСЃРїРѕР»СЊР·СѓРµРј С‚РѕС‚ Р¶Рµ С„РѕСЂРјР°С‚, РєРѕС‚РѕСЂС‹Р№ Р±С‹Р» Р·Р°РґР°РЅ РґР»СЏ РІРІРѕРґР° Рё РІР°Р»РёРґР°С†РёРё
     QString format = "yyyy-MM-dd HH:mm";
-    lineEdit->setPlaceholderText(format); // Подсказка для пользователя
+    lineEdit->setPlaceholderText(format); // РџРѕРґСЃРєР°Р·РєР° РґР»СЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
     QDateTime dateTime = QDateTime::fromString(dateTimeString, format);
 
-    // 3. Проверяем, успешно ли прошло преобразование
+    // 3. РџСЂРѕРІРµСЂСЏРµРј, СѓСЃРїРµС€РЅРѕ Р»Рё РїСЂРѕС€Р»Рѕ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ
     if (dateTime.isValid()) {
-        // Дата и время успешно распознаны
-       // qDebug() << "Считанная дата и время:" << dateTime;
+        // Р”Р°С‚Р° Рё РІСЂРµРјСЏ СѓСЃРїРµС€РЅРѕ СЂР°СЃРїРѕР·РЅР°РЅС‹
+       // qDebug() << "РЎС‡РёС‚Р°РЅРЅР°СЏ РґР°С‚Р° Рё РІСЂРµРјСЏ:" << dateTime;
 
-        // Теперь вы можете использовать объект dateTime для дальнейших операций:
+        // РўРµРїРµСЂСЊ РІС‹ РјРѕР¶РµС‚Рµ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РѕР±СЉРµРєС‚ dateTime РґР»СЏ РґР°Р»СЊРЅРµР№С€РёС… РѕРїРµСЂР°С†РёР№:
         // int year = dateTime.date().year();
         // int month = dateTime.date().month();
         // int day = dateTime.date().day();
         // QTime time = dateTime.time();
-        // ... и так далее
+        // ... Рё С‚Р°Рє РґР°Р»РµРµ
     }
     else {
-        // Ошибка: строка не соответствует формату или содержит некорректную дату/время
-        // Этого не должно произойти, если валидатор настроен правильно и включен,
-        // но проверка все равно полезна.
-       // qDebug() << "Ошибка: не удалось распознать дату и время из строки:" << dateTimeString;
-        // Здесь можно предпринять действия по обработке ошибки,
-        // например, показать сообщение пользователю.
+        // РћС€РёР±РєР°: СЃС‚СЂРѕРєР° РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ С„РѕСЂРјР°С‚Сѓ РёР»Рё СЃРѕРґРµСЂР¶РёС‚ РЅРµРєРѕСЂСЂРµРєС‚РЅСѓСЋ РґР°С‚Сѓ/РІСЂРµРјСЏ
+        // Р­С‚РѕРіРѕ РЅРµ РґРѕР»Р¶РЅРѕ РїСЂРѕРёР·РѕР№С‚Рё, РµСЃР»Рё РІР°Р»РёРґР°С‚РѕСЂ РЅР°СЃС‚СЂРѕРµРЅ РїСЂР°РІРёР»СЊРЅРѕ Рё РІРєР»СЋС‡РµРЅ,
+        // РЅРѕ РїСЂРѕРІРµСЂРєР° РІСЃРµ СЂР°РІРЅРѕ РїРѕР»РµР·РЅР°.
+       // qDebug() << "РћС€РёР±РєР°: РЅРµ СѓРґР°Р»РѕСЃСЊ СЂР°СЃРїРѕР·РЅР°С‚СЊ РґР°С‚Сѓ Рё РІСЂРµРјСЏ РёР· СЃС‚СЂРѕРєРё:" << dateTimeString;
+        // Р—РґРµСЃСЊ РјРѕР¶РЅРѕ РїСЂРµРґРїСЂРёРЅСЏС‚СЊ РґРµР№СЃС‚РІРёСЏ РїРѕ РѕР±СЂР°Р±РѕС‚РєРµ РѕС€РёР±РєРё,
+        // РЅР°РїСЂРёРјРµСЂ, РїРѕРєР°Р·Р°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ.
         //lineEdit->setText("2025-01-01 00:00");
     }
     statusLabelsMap.insert(lineEdit, statusLabel);
     connect(lineEdit, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDateTimeInput);
-    //QString input = dateTimeString; // Копируем для изменения
+    //QString input = dateTimeString; // РљРѕРїРёСЂСѓРµРј РґР»СЏ РёР·РјРµРЅРµРЅРёСЏ
    // int pos = 0;
    // const QValidator* validator = lineEdit->validator();
     //if (validator) {
@@ -222,20 +227,20 @@ bool SolarGeometryCalculatorNOAA::CheckValidationTime(QLineEdit* lineEdit, QLabe
 }
 void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
 
-    // Получаем указатель на QLineEdit, который отправил сигнал
+    // РџРѕР»СѓС‡Р°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° QLineEdit, РєРѕС‚РѕСЂС‹Р№ РѕС‚РїСЂР°РІРёР» СЃРёРіРЅР°Р»
     QLineEdit* editor = qobject_cast<QLineEdit*>(sender());
     if (!editor) {
         qDebug() << "sender() is not a QLineEdit!";
         return;
     }
 
-    // Находим соответствующий QLabel для статуса
+    // РќР°С…РѕРґРёРј СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ QLabel РґР»СЏ СЃС‚Р°С‚СѓСЃР°
     QLabel* currentStatusLabel = statusLabelsMap.value(editor, nullptr);
     if (!currentStatusLabel) {
         qDebug() << "No status label found for editor:" << editor;
-        // Можно создать временный QLabel или просто выводить в qDebug
-        // Для примера, просто выйдем, если метка не найдена
-        currentStatusLabel = new QLabel(); // Временная метка, чтобы не было падения
+        // РњРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ РІСЂРµРјРµРЅРЅС‹Р№ QLabel РёР»Рё РїСЂРѕСЃС‚Рѕ РІС‹РІРѕРґРёС‚СЊ РІ qDebug
+        // Р”Р»СЏ РїСЂРёРјРµСЂР°, РїСЂРѕСЃС‚Рѕ РІС‹Р№РґРµРј, РµСЃР»Рё РјРµС‚РєР° РЅРµ РЅР°Р№РґРµРЅР°
+        currentStatusLabel = new QLabel(); // Р’СЂРµРјРµРЅРЅР°СЏ РјРµС‚РєР°, С‡С‚РѕР±С‹ РЅРµ Р±С‹Р»Рѕ РїР°РґРµРЅРёСЏ
     }
 
 
@@ -243,7 +248,7 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
     QString format = "yyyy-MM-dd HH:mm";
     QDateTime dateTime = QDateTime::fromString(dateTimeString, format);
 
-    // Проверяем состояние валидатора, если он есть
+    // РџСЂРѕРІРµСЂСЏРµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РІР°Р»РёРґР°С‚РѕСЂР°, РµСЃР»Рё РѕРЅ РµСЃС‚СЊ
     bool isValidByValidator = true;
     const QValidator* validator = editor->validator();
     if (validator) {
@@ -253,31 +258,31 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
 
 
     if (dateTime.isValid() && isValidByValidator) {
-        //currentStatusLabel->setText("Корректно: " + dateTime.toString(format));
+        //currentStatusLabel->setText("РљРѕСЂСЂРµРєС‚РЅРѕ: " + dateTime.toString(format));
         currentStatusLabel->setStyleSheet("color: green;");
-        // qDebug() << "Проверка для" << editor->objectName() << "прошла: " << dateTime;
+        // qDebug() << "РџСЂРѕРІРµСЂРєР° РґР»СЏ" << editor->objectName() << "РїСЂРѕС€Р»Р°: " << dateTime;
     }
-    else if (editor->hasAcceptableInput()) { // Учитываем промежуточные состояния маски
-      // Если валидатор QDateTimeValidator и маска, hasAcceptableInput может быть true для неполного ввода
-      // Но fromString может вернуть невалидную дату.
-      // QDateTimeValidator::Acceptable более строг.
+    else if (editor->hasAcceptableInput()) { // РЈС‡РёС‚С‹РІР°РµРј РїСЂРѕРјРµР¶СѓС‚РѕС‡РЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РјР°СЃРєРё
+      // Р•СЃР»Рё РІР°Р»РёРґР°С‚РѕСЂ QDateTimeValidator Рё РјР°СЃРєР°, hasAcceptableInput РјРѕР¶РµС‚ Р±С‹С‚СЊ true РґР»СЏ РЅРµРїРѕР»РЅРѕРіРѕ РІРІРѕРґР°
+      // РќРѕ fromString РјРѕР¶РµС‚ РІРµСЂРЅСѓС‚СЊ РЅРµРІР°Р»РёРґРЅСѓСЋ РґР°С‚Сѓ.
+      // QDateTimeValidator::Acceptable Р±РѕР»РµРµ СЃС‚СЂРѕРі.
         if (validator && validator->validate(dateTimeString, *(new int(0))) == QValidator::Intermediate) {
-            //currentStatusLabel->setText("Ввод не завершен...");
+            //currentStatusLabel->setText("Р’РІРѕРґ РЅРµ Р·Р°РІРµСЂС€РµРЅ...");
             currentStatusLabel->setStyleSheet("color: orange;");
         }
-        else if (!isValidByValidator && !dateTime.isValid()) { // Если и валидатор говорит Invalid и fromString
-            //urrentStatusLabel->setText("Ошибка: неверный формат/дата.");
+        else if (!isValidByValidator && !dateTime.isValid()) { // Р•СЃР»Рё Рё РІР°Р»РёРґР°С‚РѕСЂ РіРѕРІРѕСЂРёС‚ Invalid Рё fromString
+            //urrentStatusLabel->setText("РћС€РёР±РєР°: РЅРµРІРµСЂРЅС‹Р№ С„РѕСЂРјР°С‚/РґР°С‚Р°.");
             currentStatusLabel->setStyleSheet("color: red;");
         }
-        else { // Попытка обработать другие случаи
-           // currentStatusLabel->setText("Формат не завершен или не точен.");
+        else { // РџРѕРїС‹С‚РєР° РѕР±СЂР°Р±РѕС‚Р°С‚СЊ РґСЂСѓРіРёРµ СЃР»СѓС‡Р°Рё
+           // currentStatusLabel->setText("Р¤РѕСЂРјР°С‚ РЅРµ Р·Р°РІРµСЂС€РµРЅ РёР»Рё РЅРµ С‚РѕС‡РµРЅ.");
             currentStatusLabel->setStyleSheet("color: orange;");
         }
     }
     else {
-       //currentStatusLabel->setText("Ошибка: неверный формат или некорректная дата/время.");
+       //currentStatusLabel->setText("РћС€РёР±РєР°: РЅРµРІРµСЂРЅС‹Р№ С„РѕСЂРјР°С‚ РёР»Рё РЅРµРєРѕСЂСЂРµРєС‚РЅР°СЏ РґР°С‚Р°/РІСЂРµРјСЏ.");
         currentStatusLabel->setStyleSheet("color: red;");
-        // qDebug() << "Ошибка проверки для" << editor->objectName() << ":" << dateTimeString;
+        // qDebug() << "РћС€РёР±РєР° РїСЂРѕРІРµСЂРєРё РґР»СЏ" << editor->objectName() << ":" << dateTimeString;
     }
 }
 
@@ -297,8 +302,8 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
  bool SolarGeometryCalculatorNOAA::CheckValidationLatitude()
 {
         ui.le_latitude->setPlaceholderText("-90.0 : +90.0");
-        QDoubleValidator* latValidator = new QDoubleValidator(-90.0, 90.0, 7, ui.le_latitude); // 7 знаков после запятой
-        latValidator->setNotation(QDoubleValidator::StandardNotation); // Обычная десятичная запись
+        QDoubleValidator* latValidator = new QDoubleValidator(-90.0, 90.0, 7, ui.le_latitude); // 7 Р·РЅР°РєРѕРІ РїРѕСЃР»Рµ Р·Р°РїСЏС‚РѕР№
+        latValidator->setNotation(QDoubleValidator::StandardNotation); // РћР±С‹С‡РЅР°СЏ РґРµСЃСЏС‚РёС‡РЅР°СЏ Р·Р°РїРёСЃСЊ
         ui.le_latitude->setValidator(latValidator);
         statusLabelsMap.insert(ui.le_latitude, ui.l_latitude);
         connect(ui.le_latitude, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDataSGCInput);
@@ -308,50 +313,51 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
     }
 
 
- bool SolarGeometryCalculatorNOAA::CheckValidationIntervalSec()
-{
-    ui.le_interval_time->setPlaceholderText(">= 0");
-    QIntValidator* intervalValidator = new QIntValidator(0, 2147483647, ui.le_interval_time); // От 0 до макс. int
-    ui.le_interval_time->setValidator(intervalValidator);
-    statusLabelsMap.insert(ui.le_interval_time, ui.l_interval_time);
-    connect(ui.le_interval_time, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDataSGCInput);
-    QString text = ui.le_interval_time->text();
-    int pos = 0;
-    return intervalValidator->validate(text, pos) == QValidator::Acceptable;
-}
+// bool SolarGeometryCalculatorNOAA::CheckValidationIntervalSec()
+//{
+//    ui.le_interval_time->setPlaceholderText(">= 0");
+//    QIntValidator* intervalValidator = new QIntValidator(0, 2147483647, ui.le_interval_time); // РћС‚ 0 РґРѕ РјР°РєСЃ. int
+//    ui.le_interval_time->setValidator(intervalValidator);
+//    statusLabelsMap.insert(ui.le_interval_time, ui.l_interval_time);
+//    connect(ui.le_interval_time, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDataSGCInput);
+//    QString text = ui.le_interval_time->text();
+//    int pos = 0;
+//    return intervalValidator->validate(text, pos) == QValidator::Acceptable;
+//}
  
 void SolarGeometryCalculatorNOAA::validateDataSGCInput()
 {
-    // Получаем указатель на QLineEdit, который отправил сигнал
+   
+    // РџРѕР»СѓС‡Р°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° QLineEdit, РєРѕС‚РѕСЂС‹Р№ РѕС‚РїСЂР°РІРёР» СЃРёРіРЅР°Р»
     QLineEdit* edit = qobject_cast<QLineEdit*>(sender());
     if (!edit) {
         qDebug() << "sender() is not a QLineEdit!";
         return;
     }
 
-    // Находим соответствующий QLabel для статуса
+    // РќР°С…РѕРґРёРј СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ QLabel РґР»СЏ СЃС‚Р°С‚СѓСЃР°
     QLabel* statusLabel = statusLabelsMap.value(edit, nullptr);
     if (!statusLabel) {
         qDebug() << "No status label found for editor:" << edit;
-        // Можно создать временный QLabel или просто выводить в qDebug
-        // Для примера, просто выйдем, если метка не найдена
-        statusLabel = new QLabel(); // Временная метка, чтобы не было падения
+        // РњРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ РІСЂРµРјРµРЅРЅС‹Р№ QLabel РёР»Рё РїСЂРѕСЃС‚Рѕ РІС‹РІРѕРґРёС‚СЊ РІ qDebug
+        // Р”Р»СЏ РїСЂРёРјРµСЂР°, РїСЂРѕСЃС‚Рѕ РІС‹Р№РґРµРј, РµСЃР»Рё РјРµС‚РєР° РЅРµ РЅР°Р№РґРµРЅР°
+        statusLabel = new QLabel(); // Р’СЂРµРјРµРЅРЅР°СЏ РјРµС‚РєР°, С‡С‚РѕР±С‹ РЅРµ Р±С‹Р»Рѕ РїР°РґРµРЅРёСЏ
     }
     if (!edit->text().isEmpty() && !edit->hasAcceptableInput()) {
-        // Ввод есть, но он не соответствует валидатору
+        // Р’РІРѕРґ РµСЃС‚СЊ, РЅРѕ РѕРЅ РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РІР°Р»РёРґР°С‚РѕСЂСѓ
     
         statusLabel->setStyleSheet("color: red;");
     }
     else if (edit->text().isEmpty() && edit->validator() != nullptr) {
-        // Поле пустое, но если есть валидатор, можно считать это промежуточным состоянием
+        // РџРѕР»Рµ РїСѓСЃС‚РѕРµ, РЅРѕ РµСЃР»Рё РµСЃС‚СЊ РІР°Р»РёРґР°С‚РѕСЂ, РјРѕР¶РЅРѕ СЃС‡РёС‚Р°С‚СЊ СЌС‚Рѕ РїСЂРѕРјРµР¶СѓС‚РѕС‡РЅС‹Рј СЃРѕСЃС‚РѕСЏРЅРёРµРј
       
         statusLabel->setStyleSheet("color: orange;");
     }
     else if (edit->hasAcceptableInput() || edit->text().isEmpty()) {
-        // Ввод корректен или поле пустое (и это допустимо)
+        // Р’РІРѕРґ РєРѕСЂСЂРµРєС‚РµРЅ РёР»Рё РїРѕР»Рµ РїСѓСЃС‚РѕРµ (Рё СЌС‚Рѕ РґРѕРїСѓСЃС‚РёРјРѕ)
    
         statusLabel->setStyleSheet("color: green;");
-        if (edit->text().isEmpty()) { // Если пусто, вернуть исходный текст метки
+        if (edit->text().isEmpty()) { // Р•СЃР»Рё РїСѓСЃС‚Рѕ, РІРµСЂРЅСѓС‚СЊ РёСЃС…РѕРґРЅС‹Р№ С‚РµРєСЃС‚ РјРµС‚РєРё
             statusLabel->setStyleSheet("color: orange;");
        
         }
@@ -363,7 +369,7 @@ void SolarGeometryCalculatorNOAA::ShowTableWidget(const QVector<QVector<double>>
     if(!SGCData.isEmpty()){
         ui.tw_SGC->setRowCount(SGCData[0].size());
         ui.tw_SGC->setColumnCount(SGCData.size());
-        // ui.tw_SGC->setHorizontalHeaderLabels({ "Время (сек)", "Юлианская дата" });
+        // ui.tw_SGC->setHorizontalHeaderLabels({ "Р’СЂРµРјСЏ (СЃРµРє)", "Р®Р»РёР°РЅСЃРєР°СЏ РґР°С‚Р°" });
 
         for (int i = 0; i < SGCData.size(); ++i) {
             for (int j = 0; j < SGCData[i].size(); ++j) {
@@ -374,27 +380,43 @@ void SolarGeometryCalculatorNOAA::ShowTableWidget(const QVector<QVector<double>>
     }
 
 }
-
+QString clean(const QString& s) {
+    QString result = s;
+    result.remove(QRegularExpression("[\\\\/:*?\"<>|= ]")); // СѓРґР°Р»СЏРµС‚ РЅРµРґРѕРїСѓСЃС‚РёРјС‹Рµ СЃРёРјРІРѕР»С‹
+    return result;
+}
 void SolarGeometryCalculatorNOAA::SaveAMElevation()
 {
-    const QString& dirName = "AM(Elevation) on long = " + ui.le_longitude->text() + " lat =" + ui.le_latitude->text();
+    setlocale(LC_ALL, "ru_RU.UTF-8");
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("РЎРѕС…СЂР°РЅРµРЅРёРµ AM Рё Elevation");
+    QString dirName = "./AM_Elevation_long_" + clean(ui.le_longitude->text()) + "_lat_" + clean(ui.le_latitude->text());
     QDir dir;
+    //QMessageBox msg;
+    //msg.setWindowTitle("РЎРѕС…СЂР°РЅРµРЅРёРµ AM Рё Elevation");
     if (!dir.exists(dirName)) {
         if (!dir.mkpath(dirName)) {
-            //QMessageBox::critical(nullptr, QStringLiteral("Ошибка"), QStringLiteral("Не удалось создать папку ") + dirName);
+            msgBox.setText(QString::fromUtf8("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ РїР°РїРєСѓ:\n") + dirName);
+            msgBox.exec();
+            //QMessageBox::critical(this, QString::fromUtf8(u8"РћС€РёР±РєР°"), );
             return;
         }
     }
-    const QString& fileName = "AM(Elevation)_long=" + ui.le_longitude->text() + "_lat =" + ui.le_latitude->text()
-							+ "_time = " + ui.le_UTC_Start_Date->text() + "-" + ui.le_UTC_End_Date->text()+".dat";
+
+    QString fileName = "AM_Elevation_long_" + clean(ui.le_longitude->text())
+        + "_lat_" + clean(ui.le_latitude->text())
+        + "_time_" + clean(ui.le_UTC_Start_Date->text()) + "-" + clean(ui.le_UTC_End_Date->text()) + ".dat";
+
     QString filePath = dirName + "/" + fileName;
+
     QFile file(filePath);
-    
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            //QMessageBox::critical(nullptr, QStringLiteral("Ошибка"), QStringLiteral("Не удалось открыть файл: ") + filePath);
-            return;
-        }
-    
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        msgBox.setText("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»:\n" + filePath);
+        msgBox.exec();
+    	//QMessageBox::critical(this, QString::fromUtf8(u8"РћС€РёР±РєР°"), "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»:\n" + filePath);
+        return;
+    }
+
     QTextStream out(&file);
     int rows = ui.tw_SGC->rowCount();
     int cols = ui.tw_SGC->columnCount();
@@ -409,5 +431,7 @@ void SolarGeometryCalculatorNOAA::SaveAMElevation()
     }
 
     file.close();
-    //QMessageBox::information(nullptr, QStringLiteral("Сохранение"), QStringLiteral("Данные сохранены в: ") + filePath);
+    QString st = QString::fromUtf8(u8"Р”Р°РЅРЅС‹Рµ СЃРѕС…СЂР°РЅРµРЅС‹!");
+    msgBox.setText(st);
+    msgBox.exec();
 }

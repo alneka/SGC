@@ -33,7 +33,7 @@ private slots:
     //void CheckValidationInputSGC(QLineEdit* lineEdit, QLabel* statusLabel);
     bool CheckValidationLongitude();
     bool CheckValidationLatitude();
-    bool CheckValidationIntervalSec();
+   // bool CheckValidationIntervalSec();
     void validateDataSGCInput();
     bool areAllFieldsValid(const QList<bool>& fields) {
         for (const auto& field : fields) {
