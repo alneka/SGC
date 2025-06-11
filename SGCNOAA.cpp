@@ -30,7 +30,7 @@ SGCNOAA::SGCNOAA(QDateTime startDateTime, QDateTime endDateTime, int lat, int lo
 }
 void SGCNOAA::TimePastLocal(QVector<double>& time) {
     QTime qtimeStart = startDateTime.time();
-    QTime qtimeEnd = endDateTime.time();
+    //QTime qtimeEnd = endDateTime.time();
 
     double time_ = qtimeStart.hour() *60 + qtimeStart.minute();
     //double minutesOfStartTime = (endDateTime.date().year() *  - startDateTime.date().year());
@@ -38,64 +38,108 @@ void SGCNOAA::TimePastLocal(QVector<double>& time) {
     //double delta_months = (endDateTime.date().year() - startDateTime.date().year());
     //double time_of_end =  qtimeStart.hour() * 60 * 60 + qtimeStart.minute() * 60;
 
-    double secondsStarEnd = qtimeStart.secsTo(qtimeEnd) ;
-    qDebug() << "Start DateTime:" << startDateTime;
-    qDebug() << "Start Time:" << startDateTime.time();
-    qDebug() << "End DateTime:" << endDateTime;
-    qDebug() << "End Time:" << endDateTime.time();
-    int finish_time = 1  * 60*24 / (10 * 24 * 6);
+    //double secondsStarEnd = qtimeStart.secsTo(qtimeEnd) ;
+    //qDebug() << "Start DateTime:" << startDateTime;
+    //qDebug() << "Start Time:" << startDateTime.time();
+    //qDebug() << "End DateTime:" << endDateTime;
+    //qDebug() << "End Time:" << endDateTime.time();
+    //int finish_time = 1  * 60*24 / (10 * 24 * 6);
     time.clear();
-    // Генерируем временные метки с шагом 1 секунда
-    double interv = static_cast<double>(interval) / (10 * 24 * 60*6);
+    // Генерируем временные метки с шагом 1 минута
+    double interv = static_cast<double>(interval) / 240 ;
     //for (double t = time_; t <= finish_time; t += interv) {
     //for (double t = time_; t <= secondsStarEnd; t += interv) {
     //    time.push_back(t);
     //}
     double startTimeMin = startDateTime.toSecsSinceEpoch()/60;
-    double endTimeMin = endDateTime.toSecsSinceEpoch() / 60;
-    double startToEndTime = (endTimeMin - startTimeMin);
-    for (double t = time_; t <= time_+startToEndTime; t += 1) {
+    double endTimeMin = endDateTime.toSecsSinceEpoch()/60;
+	interval = 6;
+    double startToEndTime = interv*(endTimeMin - startTimeMin)/ interval;
+    
+    for (double t = time_; t <= time_+startToEndTime; t += interv) {
         time.push_back(t - time_); // или просто t, в зависимости от задачи
-    }
+    } 
 }
 void SGCNOAA::JulianDay(QVector<double>& julian_days, Data& data, QVector<double>& TPL) {
-    int  Y, M, A, B;
-    float N;
-    //Вводим Год, Месяц, Ltym.
-    julian_days.clear();
-    //Проверяем условие Month>2
-    if (data.Month > 2) {
-        Y = data.Year; M = data.Month;
-    }
-    else {
-        Y = data.Year - 1; M = data.Month + 12;
-    }
-    //Вычисляем N по формуле.
-    N = (data.Year + double(data.Month) / 100 + double(data.Day) / 10000);
-    //Проверяем условие N>=1582.1015
-    if (N >= 1582.1015) {
-        A = int(Y / 100);  B = 2 - A + int(A / 4);
-    }
-    else {
-        A = 0; B = 0;
-    }
-    // Конвертируем секунды в доли суток (1 секунда = 1/86400 дня)
-    const double secondsToDays = 1.0 / 86400.0;
-
-    //Вычисляем Юлианскую дату.
-    //for (int i = 0; i < TPL.size(); i++) {
-    //    julian_days.push_back(int(365.25 * Y) + int(30.6001 * (M + 1)) + data.Day + B + 1720994.5 + (TPL[i] / 60 / 24));
-    //    // julian_days.push_back(
+    //int  Y, M, A, B;
+    //float N;
+    ////Вводим Год, Месяц, Ltym.
+    //julian_days.clear();
+    ////Проверяем условие Month>2
+    //if (data.Month > 2) {
+    //    Y = data.Year; M = data.Month;
     //}
-    // Вычисляем юлианскую дату для каждой временной метки
-    for (double t : TPL) {
-        double JD = int(365.25 * (Y + 4716))
-            + int(30.6001 * (M + 1))
-            + data.Day
-            + B
-            - 1524.5
-            + (t * secondsToDays);
-        julian_days.push_back(JD);
+    //else {
+    //    Y = data.Year - 1; M = data.Month + 12;
+    //}
+    ////Вычисляем N по формуле.
+    //N = (data.Year + double(data.Month) / 100 + double(data.Day) / 10000);
+    ////Проверяем условие N>=1582.1015
+    //if (N >= 1582.1015) {
+    //    A = int(Y / 100);  B = 2 - A + int(A / 4);
+    //}
+    //else {
+    //    A = 0; B = 0;
+    //}
+    //// Конвертируем секунды в доли суток (1 секунда = 1/86400 дня)
+    //const double secondsToDays = 1.0 / 86400.0;
+
+    ////Вычисляем Юлианскую дату.
+    ////for (int i = 0; i < TPL.size(); i++) {
+    ////    julian_days.push_back(int(365.25 * Y) + int(30.6001 * (M + 1)) + data.Day + B + 1720994.5 + (TPL[i] / 60 / 24));
+    ////    // julian_days.push_back(
+    ////}
+    //// Вычисляем юлианскую дату для каждой временной метки
+    //for (double t : TPL) {
+    //    double JD = int(365.25 * (Y + 4716))
+    //        + int(30.6001 * (M + 1))
+    //        + data.Day
+    //        + B
+    //        - 1524.5
+    //        + (t * secondsToDays);
+    //    julian_days.push_back(JD);
+    //}
+    QDateTime start = startDateTime;
+    QDateTime end = endDateTime;
+    TPL.clear();
+    //QTime qtimeEnd = endDateTime.time();
+    start.setTimeSpec(Qt::UTC);
+    end.setTimeSpec(Qt::UTC);
+    julian_days.clear();
+    
+    QTime tmp_time = start.time();
+    double tmp_startDay = (tmp_time.hour() + tmp_time.minute() / 60.0 + tmp_time.second() / 3600.0) / 24.0;
+    TPL.push_back(tmp_startDay*0.000695);
+    while (start <= end) {
+      
+        // Вычисляем дробный Юлианский день
+        QDate date = start.date();
+        QTime time = start.time();
+        int y = date.year();
+        int m = date.month();
+        int d = date.day();
+
+        if (m <= 2) {
+            y -= 1;
+            m += 12;
+        }
+
+        int A = y / 100;
+        int B = 2 - A + (A / 4);
+        double fracDay = (time.hour() + time.minute() / 60.0 + time.second() / 3600.0) / 24.0;
+
+        double jd = int(365.25 * (y + 4716))
+            + int(30.6001 * (m + 1))
+            + d + fracDay + B - 1524.5;
+        
+        julian_days.append(jd);
+
+        // Переход на следующую минуту
+        start = start.addSecs(360);
+    }
+    for(int i = 1 ; i<julian_days.size(); i++)
+    {
+        TPL.push_back(TPL.last() + 0.000695 * 6);
     }
 }
 
@@ -318,7 +362,7 @@ void SGCNOAA::AirMass(QVector<double>& SEA, QVector<double>& AM)
     {
         //AM.push_back(1 / cos(SZA[i]));
         //AM.push_back(1 / (sin(SEA[i]) + 0.50572 * pow((6.07995 + SEA[i]), -1.6364)));
-        if (sea < 0) { AM.push_back(0); }
+        if (sea <= 0) { AM.push_back(0); }
         else
         {
             // Переводим угол из градусов в радианы
@@ -372,7 +416,7 @@ void SGCNOAA::AirMassCorrectedForATMRefraction(QVector<double>& SECFATMR, QVecto
     for (double sea : SECFATMR)
     {
 
-        if (sea < 0) { AMCFATMR.push_back(-1); }
+        if (sea <= 0) { AMCFATMR.push_back(0); }
         else
         {
             // Переводим угол из градусов в радианы
@@ -412,14 +456,15 @@ void SGCNOAA::getResult()
     QVector<double> TPL_, julian_days_, julian_century_, GMLS_, GMAS_, EEO_, SEoC_, STL_, STA_;
     QVector<double> SRV_, SAL_, MOE_, OC_, SRA_, SD_, VY_, EOT_, HAS_, SN_, SRT_, SST_, SLD_;
     QVector<double> TST_, HA_, SZA_,  AAR_,   SAA_;
-	int timezone = 0;	QVector<double>* mass[30] = {
-        &TPL_, &julian_days_, &julian_century_, &GMLS_, &GMAS_, &EEO_, &SEoC_, &STL_, &STA_, &SRV_,
-        &SAL_, &MOE_, &OC_, &SRA_, &SD_, &VY_, &EOT_, &HAS_, &SN_, &SRT_, &SST_, &SLD_,
-        &TST_, &HA_, &SZA_, &SEA_, &AM_, &AAR_, &SECFATMR_, &AMCFATMR_
-    };
+	int timezone = 0;
+	//QVector<double>* mass[30] = {
+ //       &TPL_, &julian_days_, &julian_century_, &GMLS_, &GMAS_, &EEO_, &SEoC_, &STL_, &STA_, &SRV_,
+ //       &SAL_, &MOE_, &OC_, &SRA_, &SD_, &VY_, &EOT_, &HAS_, &SN_, &SRT_, &SST_, &SLD_,
+ //       &TST_, &HA_, &SZA_, &SEA_, &AM_, &AAR_, &SECFATMR_, &AMCFATMR_
+ //   };
 
-    Data data(startDateTime.date().day(), startDateTime.date().month(), startDateTime.date().year(),latitude,longitude,timezone);
-	TimePastLocal(TPL_);
+    Data data(startDateTime.date().day(), startDateTime.date().month(), startDateTime.date().year(),interval, longitude,timezone);
+	//TimePastLocal(TPL_);
 	JulianDay(julian_days_, data, TPL_);
 	JulianCentury(julian_century_, julian_days_);
 	GeomMeanLongSun(julian_century_, GMLS_);

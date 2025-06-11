@@ -42,7 +42,7 @@ void SolarGeometryCalculatorNOAA::InputData() {
 		CheckValidationLatitude(),
 		//CheckValidationIntervalSec()
 		};
-    if (!ui.cB_isElevation->isChecked() && !ui.cB_isElevation->isChecked()) { return; }
+    if (!ui.cB_isElevation->isChecked() && !ui.cB_isElevation->isChecked() && !ui.cB_isElevation_with_refr->isChecked() && !ui.cB_isElevation_with_refr->isChecked()) { return; }
     if(vec_validate.contains(false)) { return; }
    //if()
     //{
@@ -58,7 +58,7 @@ void SolarGeometryCalculatorNOAA::InputData() {
         int longitude = ui.le_longitude->text().toInt();
         int latitude = ui.le_latitude->text().toInt();
         //int interval = ui.le_interval_time->text().toInt();
-        int interval = 60; // 1 min 
+        int interval = 1; // 1 min 
         // 4. Создаём объект SGCNOAA с введёнными параметрами
         SGCNOAA sgcnoaa(starDateTime, endDateTime, latitude, longitude, interval);
 
@@ -70,10 +70,20 @@ void SolarGeometryCalculatorNOAA::InputData() {
 		{
             SGC.push_back(sgcnoaa.getAM());
 		}
+
         if (ui.cB_isElevation->isChecked())
         {
             SGC.push_back(sgcnoaa.getSEA());
         }
+        if (ui.cb_isAM_with_refr->isChecked())
+        {
+            SGC.push_back(sgcnoaa.getAMC());
+        }
+        if (ui.cB_isElevation_with_refr->isChecked())
+        {
+            SGC.push_back(sgcnoaa.getSECFATMR());
+        }
+
 
         //SGC.push_back(vec_AM);
         ShowTableWidget(SGC);
@@ -366,14 +376,37 @@ void SolarGeometryCalculatorNOAA::validateDataSGCInput()
 
 void SolarGeometryCalculatorNOAA::ShowTableWidget(const QVector<QVector<double>> SGCData)
 {
+
     if(!SGCData.isEmpty()){
-        ui.tw_SGC->setRowCount(SGCData[0].size());
+        ui.tw_SGC->setRowCount(SGCData[0].size()+1);
         ui.tw_SGC->setColumnCount(SGCData.size());
+
+        QVector<QString> columnNames;
+        if (ui.cb_isAM->isChecked())
+        {
+            columnNames.push_back("AM");
+        }
+
+        if (ui.cB_isElevation->isChecked())
+        {
+            columnNames.push_back("Elev");
+        }
+        if (ui.cb_isAM_with_refr->isChecked())
+        {
+            columnNames.push_back("AM+Refr");
+        }
+        if (ui.cB_isElevation_with_refr->isChecked())
+        {
+            columnNames.push_back("Elev+Refr");
+        }
+
         // ui.tw_SGC->setHorizontalHeaderLabels({ "Время (сек)", "Юлианская дата" });
 
         for (int i = 0; i < SGCData.size(); ++i) {
+            ui.tw_SGC->setItem(0, i, new QTableWidgetItem(columnNames[i]));
+            
             for (int j = 0; j < SGCData[i].size(); ++j) {
-                ui.tw_SGC->setItem(j, i, new QTableWidgetItem(QString::number(SGCData[i][j])));
+                ui.tw_SGC->setItem(j+1, i, new QTableWidgetItem(QString::number(SGCData[i][j])));
                 // table->setItem(i, 1, new QTableWidgetItem(QString::number(julianDays[i], 'f', 8)));
             }
         }

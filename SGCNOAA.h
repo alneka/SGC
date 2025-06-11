@@ -16,17 +16,17 @@ public:
 
 private:
 	QDateTime startDateTime, endDateTime;
-	int latitude;
-	int longitude;
+	double latitude;
+	double longitude;
 	int interval;
 
 	struct Data {
 		int Day = 0;
 		int Month = 0;
 		int Year = 0;
-		int Interval = 1;
-		int latitude = 0;
-		int longitude = 0;
+		double Interval = 1;
+		double latitude = 0;
+		double longitude = 0;
 		int timezone = 0;
 	};
 
