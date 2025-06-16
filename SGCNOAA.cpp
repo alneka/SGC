@@ -53,12 +53,15 @@ void SGCNOAA::TimePastLocal(QVector<double>& time) {
     //}
     double startTimeMin = startDateTime.toSecsSinceEpoch()/60;
     double endTimeMin = endDateTime.toSecsSinceEpoch()/60;
-	interval = 6;
+	interval = 1;
     double startToEndTime = interv*(endTimeMin - startTimeMin)/ interval;
     
     for (double t = time_; t <= time_+startToEndTime; t += interv) {
         time.push_back(t - time_); // или просто t, в зависимости от задачи
-    } 
+    }
+
+
+
 }
 void SGCNOAA::JulianDay(QVector<double>& julian_days, Data& data, QVector<double>& TPL) {
     //int  Y, M, A, B;
@@ -105,11 +108,29 @@ void SGCNOAA::JulianDay(QVector<double>& julian_days, Data& data, QVector<double
     //QTime qtimeEnd = endDateTime.time();
     start.setTimeSpec(Qt::UTC);
     end.setTimeSpec(Qt::UTC);
+    qint64 totalSeconds = start.secsTo(end);
+    const int stepSecs = 60; // 1 минута
+    const int steps = static_cast<int>(totalSeconds) / stepSecs + 1;
+
+    TPL.clear();
+    TPL.reserve(steps); // Оптимизация под память
+
+    for (int i = 0; i < steps; ++i) {
+        QDateTime currentDT = start.addSecs(i * stepSecs); // текущее время с шагом 1 мин
+        QTime currentT = currentDT.time();
+
+        double fractionOfDay = (currentT.hour() * 3600.0 +
+            currentT.minute() * 60.0 +
+            currentT.second()) / 86400.0;
+
+        TPL.push_back(fractionOfDay);
+    }
+
     julian_days.clear();
     
     QTime tmp_time = start.time();
     double tmp_startDay = (tmp_time.hour() + tmp_time.minute() / 60.0 + tmp_time.second() / 3600.0) / 24.0;
-    TPL.push_back(tmp_startDay*0.000695);
+    //TPL.push_back(tmp_startDay*0.000695);
     while (start <= end) {
       
         // Вычисляем дробный Юлианский день
@@ -135,12 +156,13 @@ void SGCNOAA::JulianDay(QVector<double>& julian_days, Data& data, QVector<double
         julian_days.append(jd);
 
         // Переход на следующую минуту
-        start = start.addSecs(360);
+        start = start.addSecs(60);
     }
-    for(int i = 1 ; i<julian_days.size(); i++)
-    {
-        TPL.push_back(TPL.last() + 0.000695 * 6);
-    }
+
+    //for(int i = 1 ; i<julian_days.size(); i++)
+    //{
+    //    TPL.push_back(TPL.last() + 0.000695 * 1);
+    //}
 }
 
 void SGCNOAA::JulianCentury(QVector<double>& julian_century, QVector<double> & julian_days) {

@@ -406,7 +406,7 @@ void SolarGeometryCalculatorNOAA::ShowTableWidget(const QVector<QVector<double>>
             ui.tw_SGC->setItem(0, i, new QTableWidgetItem(columnNames[i]));
             
             for (int j = 0; j < SGCData[i].size(); ++j) {
-                ui.tw_SGC->setItem(j+1, i, new QTableWidgetItem(QString::number(SGCData[i][j])));
+                ui.tw_SGC->setItem(j+1, i, new QTableWidgetItem(QString::number(SGCData[i][j], 'f', 2)));
                 // table->setItem(i, 1, new QTableWidgetItem(QString::number(julianDays[i], 'f', 8)));
             }
         }
