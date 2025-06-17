@@ -27,7 +27,7 @@ SolarGeometryCalculatorNOAA::SolarGeometryCalculatorNOAA(QWidget *parent)
     //ui.le_UTC_End_Date->setValidator(regexValidator);
 
     connect(ui.pb_SGC_start, SIGNAL(clicked()), this, SLOT(InputData()));
-    connect(ui.pb_SGC_AM_Elev_save, SIGNAL(clicked()), this, SLOT(SaveAMElevation()));
+    connect(ui.pb_SGC_AM_Elev_save, SIGNAL(clicked()), this, SLOT(SaveSGC()));
     //connect(ui.le_UTC_Start_Date, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::CheckValidationTime(*this));
 }
 
@@ -86,7 +86,10 @@ void SolarGeometryCalculatorNOAA::InputData() {
 
 
         //SGC.push_back(vec_AM);
-        ShowTableWidget(SGC);
+        ShowTableWidgetAmElev(SGC);
+        QVector<QMap<QString, int>> AMStatData;
+        AMStatData = GetAmStatistic();
+        ShowTableWidgetAmStatistic(AMStatData);
  /*       QStandardItemModel* model = new QStandardItemModel();
 
         for (double value : vec_AM) {
@@ -374,7 +377,7 @@ void SolarGeometryCalculatorNOAA::validateDataSGCInput()
     }
 }
 
-void SolarGeometryCalculatorNOAA::ShowTableWidget(const QVector<QVector<double>> SGCData)
+void SolarGeometryCalculatorNOAA::ShowTableWidgetAmElev(const QVector<QVector<double>>& SGCData)
 {
 
     if(!SGCData.isEmpty()){
@@ -413,16 +416,137 @@ void SolarGeometryCalculatorNOAA::ShowTableWidget(const QVector<QVector<double>>
     }
 
 }
+void SolarGeometryCalculatorNOAA::CheckRowTableWidget(QMap<QString, int>& frequencyMap, QString name_col, const double min, const double max, const double precision)
+{
+    int rowCount = ui.tw_SGC->rowCount();
+    int colCount = ui.tw_SGC->columnCount();
+
+    for (int col = 0; col < colCount; ++col) {
+        QTableWidgetItem* headerItem = ui.tw_SGC->item(0, col);
+        if (!headerItem) continue;
+
+        QString headerText = headerItem->text();
+        if (!(headerText.startsWith(name_col)) )
+            continue;  // Пропускаем столбцы без AM/AM Cor
+
+        // Обрабатываем остальные строки (начиная со второй)
+        for (int row = 1; row < rowCount; ++row) {
+            QTableWidgetItem* item = ui.tw_SGC->item(row, col);
+            if (!item) continue;
+
+            bool ok = false;
+            double value = item->text().toDouble(&ok);
+            if (ok && value >= min && value <= max) {
+                QString key = QString::number(value, 'f', precision);
+                if (frequencyMap.contains(key))
+                    frequencyMap[key]++;
+            }
+        }
+        break;
+    }
+}
+QVector<QMap<QString, int>> SolarGeometryCalculatorNOAA::GetAmStatistic()
+{
+    QVector<QMap<QString, int>> AMStat;
+    if (!ui.tw_SGC->rowCount() == 0 && !ui.tw_SGC->columnCount() == 0)
+    {
+        const double minValue = 1.00;
+        const double maxValue = 10.00;
+        const double step = 0.01;
+        const int precision = 2;
+
+        // Подготовим карту частот
+        QMap<QString, int> frequencyMapAm, frequencyMapAmCor;
+        for (double val = minValue; val <= maxValue + 1e-6; val += step) {
+            QString key = QString::number(val, 'f', precision);
+            frequencyMapAm[key] = 0;
+            frequencyMapAmCor[key] = 0;
+        }
+        CheckRowTableWidget(frequencyMapAm, "AM", minValue, maxValue, precision);
+        AMStat.push_back(frequencyMapAm);
+        if (ui.cb_isAM_with_refr->isChecked())
+        {
+            CheckRowTableWidget(frequencyMapAmCor, "AM+Refr", minValue, maxValue, precision);
+            AMStat.push_back(frequencyMapAmCor);
+        }
+    }
+    return AMStat;
+}
+void SolarGeometryCalculatorNOAA::ShowTableWidgetAmStatistic(const  QVector<QMap<QString, int>>& AMStat)
+{
+    if (AMStat.isEmpty())
+        return;
+
+    // Все QMap имеют одинаковые ключи
+    const int rowCount = AMStat[0].size(); // количество уникальных AM значений
+    const int colCount = AMStat.size();    // количество наборов статистики
+
+    ui.tw_SGC_AM_statistic->clear();
+    ui.tw_SGC_AM_statistic->setRowCount(rowCount);
+    ui.tw_SGC_AM_statistic->setColumnCount(colCount + 1); // +1 — столбец для ключей (AM)
+
+    // Заголовки столбцов
+    QStringList headers;
+    headers << "N";
+    if (colCount > 0)
+    {
+        headers << QString("AM");
+        if (colCount > 1)
+        {
+            headers << QString("AM+Cor");
+        }
+    }
+        
+    
+    ui.tw_SGC_AM_statistic->setHorizontalHeaderLabels(headers);
+
+    // Получим упорядоченные ключи
+    QStringList keys = AMStat[0].keys();
+
+    // Заполняем первую колонку (AM значения)
+    for (int row = 0; row < rowCount; ++row) {
+        ui.tw_SGC_AM_statistic->setItem(row, 0, new QTableWidgetItem(keys[row]));
+    }
+
+    // Заполняем значения статистики
+    for (int col = 0; col < colCount; ++col) {
+        const QMap<QString, int>& map = AMStat[col];
+        for (int row = 0; row < rowCount; ++row) {
+            QString key = keys[row];
+            int value = map.value(key, 0); // безопасно, даже если нет ключа
+            ui.tw_SGC_AM_statistic->setItem(row, col + 1, new QTableWidgetItem(QString::number(value)));
+        }
+    }
+
+    ui.tw_SGC_AM_statistic->resizeColumnsToContents();
+}
+
 QString clean(const QString& s) {
     QString result = s;
     result.remove(QRegularExpression("[\\\\/:*?\"<>|= ]")); // удаляет недопустимые символы
     return result;
 }
-void SolarGeometryCalculatorNOAA::SaveAMElevation()
+
+
+void SolarGeometryCalculatorNOAA::SaveSGC()
+{
+    SaveAMElevation(ui.tw_SGC, 0);
+    SaveAMElevation(ui.tw_SGC_AM_statistic, 1);
+}
+
+void SolarGeometryCalculatorNOAA::SaveAMElevation(QTableWidget* table, int Var)
 {
     setlocale(LC_ALL, "ru_RU.UTF-8");
     QMessageBox msgBox;
-    msgBox.setWindowTitle("Сохранение AM и Elevation");
+
+    if(Var == 0)
+    {
+        msgBox.setWindowTitle("Сохранение AM и Elevation");
+    }
+    if(Var == 1 ) {
+        msgBox.setWindowTitle("Сохранение статистики по AM");
+    }
+
     QString dirName = "./AM_Elevation_long_" + clean(ui.le_longitude->text()) + "_lat_" + clean(ui.le_latitude->text());
     QDir dir;
     //QMessageBox msg;
@@ -435,10 +559,21 @@ void SolarGeometryCalculatorNOAA::SaveAMElevation()
             return;
         }
     }
+    QString fileName;
+    if (Var == 0)
+    {
+        fileName = "AM_Elevation_long_" + clean(ui.le_longitude->text())
+            + "_lat_" + clean(ui.le_latitude->text())
+            + "_time_" + clean(ui.le_UTC_Start_Date->text()) + "-" + clean(ui.le_UTC_End_Date->text()) + ".dat";
 
-    QString fileName = "AM_Elevation_long_" + clean(ui.le_longitude->text())
-        + "_lat_" + clean(ui.le_latitude->text())
-        + "_time_" + clean(ui.le_UTC_Start_Date->text()) + "-" + clean(ui.le_UTC_End_Date->text()) + ".dat";
+    }
+    if (Var == 1) {
+        fileName = "AM_Statistic_long_" + clean(ui.le_longitude->text())
+            + "_lat_" + clean(ui.le_latitude->text())
+            + "_time_" + clean(ui.le_UTC_Start_Date->text()) + "-" + clean(ui.le_UTC_End_Date->text()) + ".dat";
+
+    }
+
 
     QString filePath = dirName + "/" + fileName;
 
@@ -451,13 +586,13 @@ void SolarGeometryCalculatorNOAA::SaveAMElevation()
     }
 
     QTextStream out(&file);
-    int rows = ui.tw_SGC->rowCount();
-    int cols = ui.tw_SGC->columnCount();
+    int rows = table->rowCount();
+    int cols = table->columnCount();
 
     for (int i = 0; i < rows; ++i) {
         QStringList rowValues;
         for (int j = 0; j < cols; ++j) {
-            QTableWidgetItem* item = ui.tw_SGC->item(i, j);
+            QTableWidgetItem* item = table->item(i, j);
             rowValues << (item ? item->text() : "");
         }
         out << rowValues.join("\t") << "\n";

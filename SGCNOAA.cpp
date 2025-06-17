@@ -29,10 +29,10 @@ SGCNOAA::SGCNOAA(QDateTime startDateTime, QDateTime endDateTime, int lat, int lo
 {
 }
 void SGCNOAA::TimePastLocal(QVector<double>& time) {
-    QTime qtimeStart = startDateTime.time();
+    //QTime qtimeStart = startDateTime.time();
     //QTime qtimeEnd = endDateTime.time();
 
-    double time_ = qtimeStart.hour() *60 + qtimeStart.minute();
+    //double time_ = qtimeStart.hour() *60 + qtimeStart.minute();
     //double minutesOfStartTime = (endDateTime.date().year() *  - startDateTime.date().year());
     //double minutesOfEndTime = (endDateTime.date().year() - startDateTime.date().year());
     //double delta_months = (endDateTime.date().year() - startDateTime.date().year());
@@ -44,20 +44,43 @@ void SGCNOAA::TimePastLocal(QVector<double>& time) {
     //qDebug() << "End DateTime:" << endDateTime;
     //qDebug() << "End Time:" << endDateTime.time();
     //int finish_time = 1  * 60*24 / (10 * 24 * 6);
-    time.clear();
+
     // Генерируем временные метки с шагом 1 минута
-    double interv = static_cast<double>(interval) / 240 ;
+    //double interv = static_cast<double>(interval) / 240 ;
     //for (double t = time_; t <= finish_time; t += interv) {
     //for (double t = time_; t <= secondsStarEnd; t += interv) {
     //    time.push_back(t);
     //}
-    double startTimeMin = startDateTime.toSecsSinceEpoch()/60;
-    double endTimeMin = endDateTime.toSecsSinceEpoch()/60;
+    //double startTimeMin = startDateTime.toSecsSinceEpoch()/60;
+    //double endTimeMin = endDateTime.toSecsSinceEpoch()/60;
 	interval = 1;
-    double startToEndTime = interv*(endTimeMin - startTimeMin)/ interval;
+    //double startToEndTime = interv*(endTimeMin - startTimeMin)/ interval;
     
-    for (double t = time_; t <= time_+startToEndTime; t += interv) {
-        time.push_back(t - time_); // или просто t, в зависимости от задачи
+   // for (double t = time_; t <= time_+startToEndTime; t += interv) {
+   //     time.push_back(t - time_); // или просто t, в зависимости от задачи
+    //}
+    QDateTime start = startDateTime;
+    QDateTime end = endDateTime;
+
+    //QTime qtimeEnd = endDateTime.time();
+    start.setTimeSpec(Qt::UTC);
+    end.setTimeSpec(Qt::UTC);
+    qint64 totalSeconds = start.secsTo(end);
+    const int stepSecs = 60; // 1 минута
+    const int steps = static_cast<int>(totalSeconds) / stepSecs + 1;
+
+    time.clear();
+    time.reserve(steps); // Оптимизация под память
+
+    for (int i = 0; i < steps; ++i) {
+        QDateTime currentDT = start.addSecs(i * stepSecs); // текущее время с шагом 1 мин
+        QTime currentT = currentDT.time();
+
+        double fractionOfDay = (currentT.hour() * 3600.0 +
+            currentT.minute() * 60.0 +
+            currentT.second()) / 86400.0;
+
+        time.push_back(fractionOfDay);
     }
 
 
@@ -104,27 +127,27 @@ void SGCNOAA::JulianDay(QVector<double>& julian_days, Data& data, QVector<double
     //}
     QDateTime start = startDateTime;
     QDateTime end = endDateTime;
-    TPL.clear();
+    
     //QTime qtimeEnd = endDateTime.time();
-    start.setTimeSpec(Qt::UTC);
-    end.setTimeSpec(Qt::UTC);
-    qint64 totalSeconds = start.secsTo(end);
-    const int stepSecs = 60; // 1 минута
-    const int steps = static_cast<int>(totalSeconds) / stepSecs + 1;
+   // start.setTimeSpec(Qt::UTC);
+   // end.setTimeSpec(Qt::UTC);
+   // qint64 totalSeconds = start.secsTo(end);
+   // const int stepSecs = 60; // 1 минута
+    //const int steps = static_cast<int>(totalSeconds) / stepSecs + 1;
 
-    TPL.clear();
-    TPL.reserve(steps); // Оптимизация под память
+    //TPL.clear();
+    //TPL.reserve(steps); // Оптимизация под память
 
-    for (int i = 0; i < steps; ++i) {
-        QDateTime currentDT = start.addSecs(i * stepSecs); // текущее время с шагом 1 мин
-        QTime currentT = currentDT.time();
+    //for (int i = 0; i < steps; ++i) {
+    //    QDateTime currentDT = start.addSecs(i * stepSecs); // текущее время с шагом 1 мин
+    //    QTime currentT = currentDT.time();
 
-        double fractionOfDay = (currentT.hour() * 3600.0 +
-            currentT.minute() * 60.0 +
-            currentT.second()) / 86400.0;
+    //    double fractionOfDay = (currentT.hour() * 3600.0 +
+    //        currentT.minute() * 60.0 +
+    //        currentT.second()) / 86400.0;
 
-        TPL.push_back(fractionOfDay);
-    }
+    //    TPL.push_back(fractionOfDay);
+    //}
 
     julian_days.clear();
     
@@ -486,7 +509,7 @@ void SGCNOAA::getResult()
  //   };
 
     Data data(startDateTime.date().day(), startDateTime.date().month(), startDateTime.date().year(),interval, longitude,timezone);
-	//TimePastLocal(TPL_);
+	TimePastLocal(TPL_);
 	JulianDay(julian_days_, data, TPL_);
 	JulianCentury(julian_century_, julian_days_);
 	GeomMeanLongSun(julian_century_, GMLS_);

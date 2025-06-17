@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>312</width>
-    <height>481</height>
+    <width>300</width>
+    <height>528</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -232,16 +232,6 @@
      <string>Сохранить</string>
     </property>
    </widget>
-   <widget class="QTableWidget" name="tw_SGC">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>210</y>
-      <width>256</width>
-      <height>192</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QCheckBox" name="cB_isElevation_with_refr">
     <property name="geometry">
      <rect>
@@ -278,13 +268,56 @@
      <string>AM+преломл.</string>
     </property>
    </widget>
+   <widget class="QTabWidget" name="tabw_AM_Elev">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>220</y>
+      <width>251</width>
+      <height>251</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>1</number>
+    </property>
+    <widget class="QWidget" name="t_AM_Elevation">
+     <attribute name="title">
+      <string>AM(Elevation)</string>
+     </attribute>
+     <widget class="QTableWidget" name="tw_SGC">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>221</width>
+        <height>201</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="t_AM_statistic">
+     <attribute name="title">
+      <string>стат. AM</string>
+     </attribute>
+     <widget class="QTableWidget" name="tw_SGC_AM_statistic">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>221</width>
+        <height>201</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>312</width>
+     <width>300</width>
      <height>21</height>
     </rect>
    </property>

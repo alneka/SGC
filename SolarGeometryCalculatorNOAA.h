@@ -43,8 +43,13 @@ private slots:
         }
         return true;
     }
-    void ShowTableWidget(const QVector<QVector<double>> SGCData);
-    void SaveAMElevation();
+    void ShowTableWidgetAmElev(const QVector<QVector<double>>& SGCData);
+    void CheckRowTableWidget(QMap<QString, int> & frequencyMap, QString name_col, const double min, const double max,  const double precision);
+    QVector<QMap<QString, int>>  GetAmStatistic();
+	void ShowTableWidgetAmStatistic(const QVector<QMap<QString, int>>& AMStatData);
+
+    void SaveSGC();
+    void SaveAMElevation(QTableWidget* table, int Var);
 };
 
 
