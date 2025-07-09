@@ -2,10 +2,12 @@
 #include "SGCNOAA.h"
 
 #include <cmath>
-#include <qvector.h>
 #include <math.h>
 #include <QDateTime>
 #include <qmath.h>
+
+#include "SolarGeometryCalculatorNOAA.h"
+#include "Solar_spectrum_calculator.h"
 
 
 double SinD(double angle) {
@@ -499,7 +501,7 @@ void SGCNOAA::SolarAzimuthAngle(QVector<double>& HA, QVector<double>& SZA, int l
 void SGCNOAA::getResult()
 {
     QVector<double> TPL_, julian_days_, julian_century_, GMLS_, GMAS_, EEO_, SEoC_, STL_, STA_;
-    QVector<double> SRV_, SAL_, MOE_, OC_, SRA_, SD_, VY_, EOT_, HAS_, SN_, SRT_, SST_, SLD_;
+    QVector<double>  SAL_, MOE_, OC_, SRA_, SD_, VY_, EOT_, HAS_, SN_, SRT_, SST_, SLD_;
     QVector<double> TST_, HA_, SZA_,  AAR_,   SAA_;
 	int timezone = 0;
 	//QVector<double>* mass[30] = {
@@ -518,7 +520,7 @@ void SGCNOAA::getResult()
 	SunEqOfCtr(julian_century_, GMAS_, SEoC_);
 	SunTrueLong(GMLS_, SEoC_, STL_);
 	SunTrueAnom(GMAS_, SEoC_, STA_);
-	SunRadVector(EEO_, STA_, SRV_);
+	SunRadVector(EEO_, STA_, SunRadVectorNOAA_);
 	SunAppLong(julian_century_, STL_, SAL_);
 	MeanObligEcliptic(julian_century_, MOE_);
 	ObliqCorr(julian_century_, MOE_, OC_);
@@ -542,3 +544,78 @@ void SGCNOAA::getResult()
 	SolarAzimuthAngle(HA_, SZA_, latitude, SD_, SAA_);
 
 }
+
+
+
+//void SolarGeometryCalculatorNOAA::SolarSpectrumCalculator(bool isWithSC)
+//{
+//    //ui.textBrowser->clear();
+//    void CheckDir();
+//    PathWithLatFolder.clear();
+//    PathWithPowerFiles.clear();
+//    //QString _AM = ui.aMLineEdit->text();
+//    QString _Press = ui.PressLineEdit->text();
+//    QString _W = ui.WLineEdit->text();
+//    QString _OZ = ui.OZLineEdit->text();
+//    QString _D = "1";// ui.DLineEdit->text();
+//    QString _Beta = ui.BetaLineEdit->text();
+//
+//    bool control = false;
+//    if (_Press.isEmpty() || _W.isEmpty(), _OZ.isEmpty() || _D.isEmpty() || _Beta.isEmpty(), BasicAM0.isEmpty()) {
+//        Error();  return;
+//    }
+//
+//    int VAR_CALC = 0;
+//    //if (ui.OneAM_cbox->isChecked()) {
+//    //    VAR_CALC = 1;
+//    //    if (_AM.isEmpty()) control = TRUE;
+//    //}
+//    QVector<double> Beta_vec;
+//    QVector<double> Latitudes;
+//    //if (ui.AOT_cbox->isChecked()) {
+//    //    GetVectorOfBeta(Beta_vec, Latitudes);
+//    //    VAR_CALC = 2;
+//    //}
+//    QString path2spec_reserv = path2spec;
+//  
+//        /// <summary>
+//        /// Spectrum calculate
+//        /// </summary>
+//        /// <param name="isWithSC"></param>
+//        //AddTextInTextBrowser("Calculate AM is starting (data for user Spectrum)");
+//        Solar_spectrum_calculator SSC;
+//        SSC.BasicAM0 = BasicAM0;
+//        SSC.CalcAMPowerATM( _Press, _W, _OZ, _D, _Beta, VAR_CALC, Beta_vec);
+//        path2spec = SSC.Path_to_spec[0];
+//        //ui.label_22->setText(path2spec);
+//       // AddTextInTextBrowser("Get AM data for user Spectrum");
+//        /// <summary>
+//        /// after send to power calculate
+//        /// </summary>
+//        /// <param name="isWithSC"></param>
+///// 
+//        if (VAR_CALC == 2) {
+//            PathWithLatFolder.push_back(path2spec_reserv);
+//            if (SSC.Path_to_spec.size() == Latitudes.size())
+//                for (int i = 0; i < SSC.Path_to_spec.size(); i++) {
+//                    PathWithLatFolder.push_back(SSC.Path_to_spec[i]);
+//                    PathWithPowerFiles.push_back(SSC.Path_to_power[i]);
+//                }
+//        }
+//        //if (isWithSC) {
+//        //    if (VAR_CALC == 2)
+//        //        ContrData2();
+//        //    else ContrData();
+//        //}
+//
+//        //if (ui.AOT_cbox->isChecked()) {
+//
+//
+//
+//        //}
+//   
+//
+//    //path2spec = ui.label_22->text();
+//}
+//
+//

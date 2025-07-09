@@ -11,7 +11,7 @@ public:
 	const QVector<double>& getAMC() const { return AMCFATMR_; }
 	const QVector<double>& getSEA() const { return SEA_; }
 	const QVector<double>& getSECFATMR() const { return SECFATMR_; }
-
+	const QVector<double>& getSunRadVector() const { return SunRadVectorNOAA_; }
 	void getResult();
 
 private:
@@ -31,8 +31,8 @@ private:
 	};
 
 
-	QVector<double>  SEA_, AM_,SECFATMR_, AMCFATMR_;
-
+	QVector<double>  SEA_, AM_,SECFATMR_, AMCFATMR_, SunRadVectorNOAA_;
+	
 
 	void TimePastLocal(QVector<double>& TPL);
 	void JulianDay(QVector<double>& julian_days, Data& data, QVector<double>& TPL);

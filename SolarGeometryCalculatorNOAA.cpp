@@ -8,6 +8,8 @@
 #include <QTextStream>
 #include <QMessageBox>
 
+#include "powercellgraphs.h"
+
 
 #pragma execution_character_set("")
 
@@ -26,15 +28,18 @@ SolarGeometryCalculatorNOAA::SolarGeometryCalculatorNOAA(QWidget *parent)
     //ui.le_UTC_Start_Date->setValidator(regexValidator);
     //ui.le_UTC_End_Date->setValidator(regexValidator);
 
-    connect(ui.pb_SGC_start, SIGNAL(clicked()), this, SLOT(InputData()));
+    connect(ui.pb_SGC_start, SIGNAL(clicked()), this, SLOT(CalcNOAA()));
     connect(ui.pb_SGC_AM_Elev_save, SIGNAL(clicked()), this, SLOT(SaveSGC()));
     //connect(ui.le_UTC_Start_Date, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::CheckValidationTime(*this));
+    //connect(ui.pb_GetSpectrum, SIGNAL(clicked()), this, SLOT(onSpectrumButtonClicked()));
+    connect(ui.pb_show_PowerCellGraphs, &QPushButton::clicked,
+        this, &SolarGeometryCalculatorNOAA::on_showGraphsButton_clicked);
 }
 
 SolarGeometryCalculatorNOAA::~SolarGeometryCalculatorNOAA()
 {}
 
-void SolarGeometryCalculatorNOAA::InputData() {
+void SolarGeometryCalculatorNOAA::CalcNOAA() {
 
     QVector<bool> vec_validate = { CheckValidationTime(ui.le_UTC_Start_Date, ui.l_UTC_Start_Date),
     	CheckValidationTime(ui.le_UTC_End_Date, ui.l_UTC_End_Date),
@@ -42,7 +47,7 @@ void SolarGeometryCalculatorNOAA::InputData() {
 		CheckValidationLatitude(),
 		//CheckValidationIntervalSec()
 		};
-    if (!ui.cB_isElevation->isChecked() && !ui.cB_isElevation->isChecked() && !ui.cB_isElevation_with_refr->isChecked() && !ui.cB_isElevation_with_refr->isChecked()) { return; }
+    if (!ui.cB_isElevation->isChecked() && !ui.cb_isAM->isChecked() && !ui.cB_isElevation_with_refr->isChecked() && !ui.cb_isAM_with_refr->isChecked()) { return; }
     if(vec_validate.contains(false)) { return; }
    //if()
     //{
@@ -63,7 +68,7 @@ void SolarGeometryCalculatorNOAA::InputData() {
         SGCNOAA sgcnoaa(starDateTime, endDateTime, latitude, longitude, interval);
 
         sgcnoaa.getResult();
-        
+        SunRadVector = sgcnoaa.getSunRadVector();
         //QVector<double> vec_SEA = sgcnoaa.getSEA();
         QVector<QVector<double>> SGC ;
 		if(ui.cb_isAM->isChecked())
@@ -87,9 +92,10 @@ void SolarGeometryCalculatorNOAA::InputData() {
 
         //SGC.push_back(vec_AM);
         ShowTableWidgetAmElev(SGC);
-        QVector<QMap<QString, int>> AMStatData;
+        AMStatData.clear();
         AMStatData = GetAmStatistic();
-        ShowTableWidgetAmStatistic(AMStatData);
+        //ShowTableWidgetAmStatistic(AMStatData);
+        ShowTableWidgetAmStatisticOrPower(ui.tw_SGC_AM_statistic, AMStatData, QString("AM"));
  /*       QStandardItemModel* model = new QStandardItemModel();
 
         for (double value : vec_AM) {
@@ -448,78 +454,129 @@ void SolarGeometryCalculatorNOAA::CheckRowTableWidget(QMap<QString, int>& freque
 QVector<QMap<QString, int>> SolarGeometryCalculatorNOAA::GetAmStatistic()
 {
     QVector<QMap<QString, int>> AMStat;
-    if (!ui.tw_SGC->rowCount() == 0 && !ui.tw_SGC->columnCount() == 0)
-    {
-        const double minValue = 1.00;
-        const double maxValue = 10.00;
-        const double step = 0.01;
-        const int precision = 2;
+    if (ui.tw_SGC->rowCount() == 0 && ui.tw_SGC->columnCount() == 0) return AMStat;
+    
+    const double minValue = 1.00;
+    const double maxValue = 10.00;
+    const double step = 0.01;
+    const int precision = 2;
 
-        // Подготовим карту частот
-        QMap<QString, int> frequencyMapAm, frequencyMapAmCor;
-        for (double val = minValue; val <= maxValue + 1e-6; val += step) {
-            QString key = QString::number(val, 'f', precision);
-            frequencyMapAm[key] = 0;
-            frequencyMapAmCor[key] = 0;
-        }
-        CheckRowTableWidget(frequencyMapAm, "AM", minValue, maxValue, precision);
-        AMStat.push_back(frequencyMapAm);
-        if (ui.cb_isAM_with_refr->isChecked())
-        {
-            CheckRowTableWidget(frequencyMapAmCor, "AM+Refr", minValue, maxValue, precision);
-            AMStat.push_back(frequencyMapAmCor);
-        }
+    // Подготовим карту частот
+    QMap<QString, int> frequencyMapAm, frequencyMapAmCor;
+    for (double val = minValue; val <= maxValue + 1e-6; val += step) {
+        QString key = QString::number(val, 'f', precision);
+        frequencyMapAm[key] = 0;
+        frequencyMapAmCor[key] = 0;
     }
+    CheckRowTableWidget(frequencyMapAm, "AM", minValue, maxValue, precision);
+    AMStat.push_back(frequencyMapAm);
+    if (ui.cb_isAM_with_refr->isChecked())
+    {
+        CheckRowTableWidget(frequencyMapAmCor, "AM+Refr", minValue, maxValue, precision);
+        AMStat.push_back(frequencyMapAmCor);
+    }
+    
     return AMStat;
 }
-void SolarGeometryCalculatorNOAA::ShowTableWidgetAmStatistic(const  QVector<QMap<QString, int>>& AMStat)
-{
-    if (AMStat.isEmpty())
-        return;
+//void SolarGeometryCalculatorNOAA::ShowTableWidgetAmStatistic(const  QVector<QMap<QString, int>>& AMStat)
+//{
+//    if (AMStat.isEmpty())
+//        return;
+//
+//    // Все QMap имеют одинаковые ключи
+//    const int rowCount = AMStat[0].size(); // количество уникальных AM значений
+//    const int colCount = AMStat.size();    // количество наборов статистики
+//
+//    ui.tw_SGC_AM_statistic->clear();
+//    ui.tw_SGC_AM_statistic->setRowCount(rowCount);
+//    ui.tw_SGC_AM_statistic->setColumnCount(colCount + 1); // +1 — столбец для ключей (AM)
+//
+//    // Заголовки столбцов
+//    QStringList headers;
+//    headers << "N";
+//    if (colCount > 0)
+//    {
+//        headers << QString("AM");
+//        if (colCount > 1)
+//        {
+//            headers << QString("AM+Cor");
+//        }
+//    }
+//        
+//    
+//    ui.tw_SGC_AM_statistic->setHorizontalHeaderLabels(headers);
+//
+//    // Получим упорядоченные ключи
+//    QStringList keys = AMStat[0].keys();
+//
+//    // Заполняем первую колонку (AM значения)
+//    for (int row = 0; row < rowCount; ++row) {
+//        ui.tw_SGC_AM_statistic->setItem(row, 0, new QTableWidgetItem(keys[row]));
+//    }
+//
+//    // Заполняем значения статистики
+//    for (int col = 0; col < colCount; ++col) {
+//        const QMap<QString, int>& map = AMStat[col];
+//        for (int row = 0; row < rowCount; ++row) {
+//            QString key = keys[row];
+//            int value = map.value(key, 0); // безопасно, даже если нет ключа
+//            ui.tw_SGC_AM_statistic->setItem(row, col + 1, new QTableWidgetItem(QString::number(value)));
+//        }
+//    }
+//
+//    ui.tw_SGC_AM_statistic->resizeColumnsToContents();
+//}
 
-    // Все QMap имеют одинаковые ключи
-    const int rowCount = AMStat[0].size(); // количество уникальных AM значений
-    const int colCount = AMStat.size();    // количество наборов статистики
-
-    ui.tw_SGC_AM_statistic->clear();
-    ui.tw_SGC_AM_statistic->setRowCount(rowCount);
-    ui.tw_SGC_AM_statistic->setColumnCount(colCount + 1); // +1 — столбец для ключей (AM)
-
-    // Заголовки столбцов
-    QStringList headers;
-    headers << "N";
-    if (colCount > 0)
-    {
-        headers << QString("AM");
-        if (colCount > 1)
-        {
-            headers << QString("AM+Cor");
-        }
-    }
-        
-    
-    ui.tw_SGC_AM_statistic->setHorizontalHeaderLabels(headers);
-
-    // Получим упорядоченные ключи
-    QStringList keys = AMStat[0].keys();
-
-    // Заполняем первую колонку (AM значения)
-    for (int row = 0; row < rowCount; ++row) {
-        ui.tw_SGC_AM_statistic->setItem(row, 0, new QTableWidgetItem(keys[row]));
-    }
-
-    // Заполняем значения статистики
-    for (int col = 0; col < colCount; ++col) {
-        const QMap<QString, int>& map = AMStat[col];
-        for (int row = 0; row < rowCount; ++row) {
-            QString key = keys[row];
-            int value = map.value(key, 0); // безопасно, даже если нет ключа
-            ui.tw_SGC_AM_statistic->setItem(row, col + 1, new QTableWidgetItem(QString::number(value)));
-        }
-    }
-
-    ui.tw_SGC_AM_statistic->resizeColumnsToContents();
-}
+//void SolarGeometryCalculatorNOAA::ShowTableWidgetAmStatisticOrPower(QTableWidget* qtwidget, QVector<QMap<QString, int>>& AMData, QString ColName)
+//{
+//    if (AMData.isEmpty())
+//        return;
+//
+//    // Все QMap имеют одинаковые ключи
+//    const int rowCount = AMData[0].size(); // количество уникальных AM значений
+//    const int colCount = AMData.size();    // количество наборов статистики
+//
+//    qtwidget->clear();
+//    qtwidget->setRowCount(rowCount);
+//    qtwidget->setColumnCount(colCount + 1); // +1 — столбец для ключей (AM)
+//
+//    // Заголовки столбцов
+//    QStringList headers;
+//    headers << "N";
+//    if (colCount > 0)
+//    {
+//        headers << QString("AM");
+//        if (colCount > 1)
+//        {
+//            headers << ColName;
+//        }
+//    }
+//
+//
+//    qtwidget->setHorizontalHeaderLabels(headers);
+//
+//    // Получим упорядоченные ключи
+//    QStringList keys = AMData[0].keys();
+//
+//    // Заполняем первую колонку (AM значения)
+//    for (int row = 0; row < rowCount; ++row) {
+//        qtwidget->setItem(row, 0, new QTableWidgetItem(keys[row]));
+//    }
+//
+//    // Заполняем значения статистики
+//    for (int col = 0; col < colCount; ++col) {
+//        const QMap<QString, int>& map = AMData[col];
+//        for (int row = 0; row < rowCount; ++row) {
+//            QString key = keys[row];
+//            int value = map.value(key, 0); // безопасно, даже если нет ключа
+//            qtwidget->setItem(row, col + 1, new QTableWidgetItem(QString::number(value)));
+//        }
+//    }
+//
+//    qtwidget->resizeColumnsToContents();
+//
+//
+//}
 
 QString clean(const QString& s) {
     QString result = s;
@@ -599,7 +656,18 @@ void SolarGeometryCalculatorNOAA::SaveAMElevation(QTableWidget* table, int Var)
     }
 
     file.close();
-    QString st = QString::fromUtf8(u8"Данные сохранены!");
+    QString st = QString::fromUtf8("Данные сохранены!");
     msgBox.setText(st);
     msgBox.exec();
+}
+
+
+void SolarGeometryCalculatorNOAA::on_showGraphsButton_clicked()
+{
+    if (!graphsWindow) {
+        graphsWindow = new PowerCellGraphs(this);
+    }
+    graphsWindow->show();
+    graphsWindow->raise();
+    graphsWindow->activateWindow();
 }
