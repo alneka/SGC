@@ -9,12 +9,14 @@
 #include <QMessageBox>
 
 #include "powercellgraphs.h"
+#include "SolarCell.h"
+#include "Solar_spectrum_calculator.h"
 
 
 #pragma execution_character_set("")
 
 SolarGeometryCalculatorNOAA::SolarGeometryCalculatorNOAA(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent), logic(new SolarCellPowerLogic(this))
 {
     ui.setupUi(this);
     //QRegularExpression rx("^([0-9]{4}) (0[1-9]|1[0-2]) (0[1-9]|[12][0-9]|3[01]) (0[0-9]|1[0-9]|2[0-3]):([0-5][0-9])$");
@@ -32,8 +34,11 @@ SolarGeometryCalculatorNOAA::SolarGeometryCalculatorNOAA(QWidget *parent)
     connect(ui.pb_SGC_AM_Elev_save, SIGNAL(clicked()), this, SLOT(SaveSGC()));
     //connect(ui.le_UTC_Start_Date, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::CheckValidationTime(*this));
     //connect(ui.pb_GetSpectrum, SIGNAL(clicked()), this, SLOT(onSpectrumButtonClicked()));
-    connect(ui.pb_show_PowerCellGraphs, &QPushButton::clicked,
-        this, &SolarGeometryCalculatorNOAA::on_showGraphsButton_clicked);
+    //connect(ui.pb_show_PowerCellGraphs, &QPushButton::clicked,
+    //    this, &SolarGeometryCalculatorNOAA::on_showGraphsButton_clicked);
+        // Создаём дочерние классы с доступом к logic и ui
+    auto spectrumCalculator = new Solar_spectrum_calculator(logic, this);
+    auto solarCell = new SolarCell(logic, this);
 }
 
 SolarGeometryCalculatorNOAA::~SolarGeometryCalculatorNOAA()
@@ -68,7 +73,7 @@ void SolarGeometryCalculatorNOAA::CalcNOAA() {
         SGCNOAA sgcnoaa(starDateTime, endDateTime, latitude, longitude, interval);
 
         sgcnoaa.getResult();
-        SunRadVector = sgcnoaa.getSunRadVector();
+        logic->SunRadVector = sgcnoaa.getSunRadVector();
         //QVector<double> vec_SEA = sgcnoaa.getSEA();
         QVector<QVector<double>> SGC ;
 		if(ui.cb_isAM->isChecked())
@@ -92,10 +97,10 @@ void SolarGeometryCalculatorNOAA::CalcNOAA() {
 
         //SGC.push_back(vec_AM);
         ShowTableWidgetAmElev(SGC);
-        AMStatData.clear();
-        AMStatData = GetAmStatistic();
+        logic->AMStatData.clear();
+        logic->AMStatData = GetAmStatistic();
         //ShowTableWidgetAmStatistic(AMStatData);
-        ShowTableWidgetAmStatisticOrPower(ui.tw_SGC_AM_statistic, AMStatData, QString("AM"));
+        logic->ShowTableWidgetAmStatisticOrPower(ui.tw_SGC_AM_statistic, logic->AMStatData, QString("AM"));
  /*       QStandardItemModel* model = new QStandardItemModel();
 
         for (double value : vec_AM) {
@@ -233,7 +238,7 @@ bool SolarGeometryCalculatorNOAA::CheckValidationTime(QLineEdit* lineEdit, QLabe
         // например, показать сообщение пользователю.
         //lineEdit->setText("2025-01-01 00:00");
     }
-    statusLabelsMap.insert(lineEdit, statusLabel);
+    logic->statusLabelsMap.insert(lineEdit, statusLabel);
     connect(lineEdit, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDateTimeInput);
     //QString input = dateTimeString; // Копируем для изменения
    // int pos = 0;
@@ -254,7 +259,7 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
     }
 
     // Находим соответствующий QLabel для статуса
-    QLabel* currentStatusLabel = statusLabelsMap.value(editor, nullptr);
+    QLabel* currentStatusLabel = logic->statusLabelsMap.value(editor, nullptr);
     if (!currentStatusLabel) {
         qDebug() << "No status label found for editor:" << editor;
         // Можно создать временный QLabel или просто выводить в qDebug
@@ -312,8 +317,9 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
         QDoubleValidator* lonValidator = new QDoubleValidator(-180.0, 180.0, 7, ui.le_longitude);
         lonValidator->setNotation(QDoubleValidator::StandardNotation);
         ui.le_longitude->setValidator(lonValidator);
-        statusLabelsMap.insert(ui.le_longitude, ui.l_longitude);
-        connect(ui.le_longitude, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDataSGCInput);
+        logic->statusLabelsMap.insert(ui.le_longitude, ui.l_longitude);
+        connect(ui.le_longitude, &QLineEdit::textChanged, [this]() {
+            logic->validateDataInput(); });
         QString text = ui.le_longitude->text();
 		int pos = 0;
 	    return lonValidator->validate(text, pos) == QValidator::Acceptable;
@@ -324,8 +330,9 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
         QDoubleValidator* latValidator = new QDoubleValidator(-90.0, 90.0, 7, ui.le_latitude); // 7 знаков после запятой
         latValidator->setNotation(QDoubleValidator::StandardNotation); // Обычная десятичная запись
         ui.le_latitude->setValidator(latValidator);
-        statusLabelsMap.insert(ui.le_latitude, ui.l_latitude);
-        connect(ui.le_latitude, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDataSGCInput);
+        logic->statusLabelsMap.insert(ui.le_latitude, ui.l_latitude);
+        connect(ui.le_latitude, &QLineEdit::textChanged, [this]() {
+            logic->validateDataInput(); });
         QString text = ui.le_latitude->text();
         int pos = 0;
         return latValidator->validate(text, pos) == QValidator::Acceptable;
@@ -338,50 +345,50 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
 //    QIntValidator* intervalValidator = new QIntValidator(0, 2147483647, ui.le_interval_time); // От 0 до макс. int
 //    ui.le_interval_time->setValidator(intervalValidator);
 //    statusLabelsMap.insert(ui.le_interval_time, ui.l_interval_time);
-//    connect(ui.le_interval_time, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDataSGCInput);
+//    connect(ui.le_interval_time, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDataInput);
 //    QString text = ui.le_interval_time->text();
 //    int pos = 0;
 //    return intervalValidator->validate(text, pos) == QValidator::Acceptable;
 //}
  
-void SolarGeometryCalculatorNOAA::validateDataSGCInput()
-{
-   
-    // Получаем указатель на QLineEdit, который отправил сигнал
-    QLineEdit* edit = qobject_cast<QLineEdit*>(sender());
-    if (!edit) {
-        qDebug() << "sender() is not a QLineEdit!";
-        return;
-    }
-
-    // Находим соответствующий QLabel для статуса
-    QLabel* statusLabel = statusLabelsMap.value(edit, nullptr);
-    if (!statusLabel) {
-        qDebug() << "No status label found for editor:" << edit;
-        // Можно создать временный QLabel или просто выводить в qDebug
-        // Для примера, просто выйдем, если метка не найдена
-        statusLabel = new QLabel(); // Временная метка, чтобы не было падения
-    }
-    if (!edit->text().isEmpty() && !edit->hasAcceptableInput()) {
-        // Ввод есть, но он не соответствует валидатору
-    
-        statusLabel->setStyleSheet("color: red;");
-    }
-    else if (edit->text().isEmpty() && edit->validator() != nullptr) {
-        // Поле пустое, но если есть валидатор, можно считать это промежуточным состоянием
-      
-        statusLabel->setStyleSheet("color: orange;");
-    }
-    else if (edit->hasAcceptableInput() || edit->text().isEmpty()) {
-        // Ввод корректен или поле пустое (и это допустимо)
-   
-        statusLabel->setStyleSheet("color: green;");
-        if (edit->text().isEmpty()) { // Если пусто, вернуть исходный текст метки
-            statusLabel->setStyleSheet("color: orange;");
-       
-        }
-    }
-}
+//void SolarGeometryCalculatorNOAA::validateDataInput()
+//{
+//   
+//    // Получаем указатель на QLineEdit, который отправил сигнал
+//    QLineEdit* edit = qobject_cast<QLineEdit*>(sender());
+//    if (!edit) {
+//        qDebug() << "sender() is not a QLineEdit!";
+//        return;
+//    }
+//
+//    // Находим соответствующий QLabel для статуса
+//    QLabel* statusLabel = logic->statusLabelsMap.value(edit, nullptr);
+//    if (!statusLabel) {
+//        qDebug() << "No status label found for editor:" << edit;
+//        // Можно создать временный QLabel или просто выводить в qDebug
+//        // Для примера, просто выйдем, если метка не найдена
+//        statusLabel = new QLabel(); // Временная метка, чтобы не было падения
+//    }
+//    if (!edit->text().isEmpty() && !edit->hasAcceptableInput()) {
+//        // Ввод есть, но он не соответствует валидатору
+//    
+//        statusLabel->setStyleSheet("color: red;");
+//    }
+//    else if (edit->text().isEmpty() && edit->validator() != nullptr) {
+//        // Поле пустое, но если есть валидатор, можно считать это промежуточным состоянием
+//      
+//        statusLabel->setStyleSheet("color: orange;");
+//    }
+//    else if (edit->hasAcceptableInput() || edit->text().isEmpty()) {
+//        // Ввод корректен или поле пустое (и это допустимо)
+//   
+//        statusLabel->setStyleSheet("color: green;");
+//        if (edit->text().isEmpty()) { // Если пусто, вернуть исходный текст метки
+//            statusLabel->setStyleSheet("color: orange;");
+//       
+//        }
+//    }
+//}
 
 void SolarGeometryCalculatorNOAA::ShowTableWidgetAmElev(const QVector<QVector<double>>& SGCData)
 {

@@ -1,9 +1,7 @@
 ﻿#pragma once
 
-#include "SolarCell.h"
-#include <algorithm>
-#include <qalgorithms.h>
-#include <QVector>
+
+#include <QList>
 #include <QString>
 
 
@@ -50,6 +48,12 @@ public:
     }
     QString pn[2][Shift];
 };
+
+//struct IntDoubleStruct
+//{
+//    int intData = 0;
+//    double doubleData = 0;
+//};
 
 struct SpChPN {
     QVector<double> Ikz;

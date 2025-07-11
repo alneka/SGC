@@ -6,6 +6,7 @@
 #include <QtWidgets>
 
 #include "powercellgraphs.h"
+#include <SolarCellPowerLogic.h>
 
 
 class SolarGeometryCalculatorNOAA : public QMainWindow
@@ -16,26 +17,28 @@ public:
 	
     SolarGeometryCalculatorNOAA(QWidget *parent = nullptr);
     ~SolarGeometryCalculatorNOAA();
-    QVector <QString> PathWithLatFolder, PathWithPowerFiles;
-    QVector<QMap<QString, int>> AMStatData;
-    QVector<double> SunRadVector;
-    QString path2spec = ".//Data/BasicAM";
-    QString BasicAM0 = ".//Data/AM0.dat";
+    //QVector <QString> PathWithLatFolder, PathWithPowerFiles;
+    ////QVector<QMap<QString, int>> AMStatData;
+    ////QVector<double> SunRadVector;
+    //QString path2spec = ".//Data/BasicAM";
+    //QString BasicAM0 = ".//Data/AM0.dat";
     Ui::SolarGeometryCalculatorNOAAClass ui;
     void exitApplication()
     {
         QCoreApplication::quit();
     }
-    QMap<QLineEdit*, QLabel*> statusLabelsMap;
-    template < typename Templl >
-    void ShowTableWidgetAmStatisticOrPower(QTableWidget* qtwidget, QVector<QMap<QString, Templl>>& AMData, QString ColName);
+    //QMap<QLineEdit*, QLabel*> statusLabelsMap;
+    //template < typename Templl >
+    //void ShowTableWidgetAmStatisticOrPower(QTableWidget* qtwidget, QVector<QMap<QString, Templl>>& AMData, QString ColName);
     PowerCellGraphs* graphsWindow = nullptr;
-    
+    SolarCellPowerLogic* logic = new SolarCellPowerLogic(this);
+private:
+  
 public slots:
-    void validateDataSGCInput();
+    //void validateDataInput();
    
-    void info();
-    void Error();
+    //void info();
+   // void Error();
 
     //void ShowTableWidgetAmStatisticOrPower1(QTableWidget* qtwidget, QVector<QMap<QString, int>>& AMData, QString ColName);
 
@@ -72,57 +75,57 @@ private slots:
 
 };
 
-
-template < typename Templl >
-inline void SolarGeometryCalculatorNOAA::ShowTableWidgetAmStatisticOrPower(QTableWidget* qtwidget, QVector<QMap<QString, Templl>>& AMData, QString ColName)
-{
-    {
-        if (AMData.isEmpty())
-            return;
-
-        const int rowCount = AMData[0].size();
-        const int colCount = AMData.size();
-
-        qtwidget->clear();
-        qtwidget->setRowCount(rowCount);
-        qtwidget->setColumnCount(colCount + 1);
-
-        QStringList headers;
-        headers << "N";
-        if (colCount > 0)
-        {
-            headers << QString(ColName);
-            if (colCount > 1)
-            {
-                headers << ColName+"+Ref";
-            }
-       
-        }
-
-        qtwidget->setHorizontalHeaderLabels(headers);
-
-        QStringList keys = AMData[0].keys();
-
-        for (int row = 0; row < rowCount; ++row) {
-            qtwidget->setItem(row, 0, new QTableWidgetItem(keys[row]));
-        }
-      
-        for (int col = 0; col < colCount; ++col) {
-            const QMap<QString, Templl>& map = AMData[col];
-            for (int row = 0; row < rowCount; ++row) {
-                QString key = keys[row];
-                Templl value = map.value(key);
-
-                if constexpr (std::is_same_v<Templl, int>) {
-                    qtwidget->setItem(row, col + 1, new QTableWidgetItem(QString::number(value)));
-                }
-                else if constexpr (std::is_same_v<Templl, double>) {
-                    qtwidget->setItem(row, col + 1, new QTableWidgetItem(QString::number(value)));
-                }
-            }
-        }
-
-        qtwidget->resizeColumnsToContents();
-    }
-
-}
+//
+//template < typename Templl >
+//inline void SolarGeometryCalculatorNOAA::ShowTableWidgetAmStatisticOrPower(QTableWidget* qtwidget, QVector<QMap<QString, Templl>>& AMData, QString ColName)
+//{
+//    {
+//        if (AMData.isEmpty())
+//            return;
+//
+//        const int rowCount = AMData[0].size();
+//        const int colCount = AMData.size();
+//
+//        qtwidget->clear();
+//        qtwidget->setRowCount(rowCount);
+//        qtwidget->setColumnCount(colCount + 1);
+//
+//        QStringList headers;
+//        headers << "N";
+//        if (colCount > 0)
+//        {
+//            headers << QString(ColName);
+//            if (colCount > 1)
+//            {
+//                headers << ColName+"+Ref";
+//            }
+//       
+//        }
+//
+//        qtwidget->setHorizontalHeaderLabels(headers);
+//
+//        QStringList keys = AMData[0].keys();
+//
+//        for (int row = 0; row < rowCount; ++row) {
+//            qtwidget->setItem(row, 0, new QTableWidgetItem(keys[row]));
+//        }
+//      
+//        for (int col = 0; col < colCount; ++col) {
+//            const QMap<QString, Templl>& map = AMData[col];
+//            for (int row = 0; row < rowCount; ++row) {
+//                QString key = keys[row];
+//                Templl value = map.value(key);
+//
+//                if constexpr (std::is_same_v<Templl, int>) {
+//                    qtwidget->setItem(row, col + 1, new QTableWidgetItem(QString::number(value)));
+//                }
+//                else if constexpr (std::is_same_v<Templl, double>) {
+//                    qtwidget->setItem(row, col + 1, new QTableWidgetItem(QString::number(value)));
+//                }
+//            }
+//        }
+//
+//        qtwidget->resizeColumnsToContents();
+//    }
+//
+//}

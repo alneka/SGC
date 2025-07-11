@@ -133,6 +133,7 @@
     <ClCompile Include="Save_solar_spectrum_calculator.cpp" />
     <ClCompile Include="SolarCell.cpp" />
     <ClCompile Include="SolarCellInterface.cpp" />
+    <ClCompile Include="SolarCellPowerLogic.cpp" />
     <ClCompile Include="Solar_spectrum_calculator.cpp" />
     <ClCompile Include="Spectr_gen.cpp" />
     <QtMoc Include="Solar_spectrum_calculator.h" />
@@ -140,6 +141,7 @@
     <QtMoc Include="SolarCell.h" />
     <QtMoc Include="qcustomplot.h" />
     <QtMoc Include="powercellgraphs.h" />
+    <QtMoc Include="SolarCellPowerLogic.h" />
     <ClInclude Include="Spectr_gen.h" />
     <QtRcc Include="SolarGeometryCalculatorNOAA.qrc" />
     <QtUic Include="PowerCellGraphs.ui" />

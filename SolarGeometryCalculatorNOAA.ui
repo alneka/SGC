@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1079</width>
-    <height>525</height>
+    <height>611</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -462,7 +462,7 @@
      </widget>
     </widget>
    </widget>
-   <widget class="QTabWidget" name="tabWidget">
+   <widget class="QTabWidget" name="tW_PowerAm">
     <property name="geometry">
      <rect>
       <x>390</x>
@@ -472,13 +472,34 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
-      <string>Power(AM)</string>
+      <string>Мощность(AM)</string>
      </attribute>
      <widget class="QTableWidget" name="tw_AMPowerATM">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>10</y>
+        <width>251</width>
+        <height>221</height>
+       </rect>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>251</width>
+        <height>221</height>
+       </size>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Мощность(AM)p-n перех.</string>
+     </attribute>
+     <widget class="QTableWidget" name="tw_AMPowerATMCell">
       <property name="geometry">
        <rect>
         <x>0</x>
@@ -516,20 +537,20 @@
     <property name="title">
      <string>Спектральные характеристики ФЭП:</string>
     </property>
-    <widget class="QPushButton" name="pb_spect_to_cur">
+    <widget class="QPushButton" name="pb_GetSolarCellPower">
      <property name="enabled">
       <bool>false</bool>
      </property>
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>150</x>
        <y>290</y>
-       <width>161</width>
+       <width>121</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Получить мощность ФЭП</string>
+      <string>Пол-ть Pфэп</string>
      </property>
     </widget>
     <widget class="QWidget" name="layoutWidget">
@@ -935,14 +956,30 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>210</x>
+       <x>280</x>
        <y>290</y>
-       <width>161</width>
+       <width>121</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
       <string>Графики</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pb_GetPowerAMPN">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>290</y>
+       <width>131</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Пол-ть Р(АМ)p-n</string>
      </property>
     </widget>
    </widget>
@@ -992,7 +1029,7 @@
       <string>Число p-n-переходов:</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="comboBox_2">
+    <widget class="QComboBox" name="cB_numPN">
      <property name="geometry">
       <rect>
        <x>170</x>
@@ -1061,7 +1098,7 @@
       <string>Размер СЭ, mm2:</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_5">
+    <widget class="QLineEdit" name="le_FF">
      <property name="geometry">
       <rect>
        <x>190</x>
@@ -1077,7 +1114,7 @@
       <string>0.86</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_6">
+    <widget class="QLineEdit" name="le_SolarCellSize">
      <property name="geometry">
       <rect>
        <x>340</x>
@@ -1093,7 +1130,7 @@
       <string>1</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEdit_4">
+    <widget class="QLineEdit" name="le_uoc">
      <property name="geometry">
       <rect>
        <x>80</x>
@@ -1122,6 +1159,22 @@
       <string>Uxx, B:</string>
      </property>
     </widget>
+   </widget>
+   <widget class="QPushButton" name="btnShowGraphs">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>700</x>
+      <y>530</y>
+      <width>123</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Применить</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

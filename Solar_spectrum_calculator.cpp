@@ -16,22 +16,22 @@ void Solar_spectrum_calculator::CalcSolarSpectrum()
      CheckValidationOzone(),
      CheckValidationTurbidityAOT(),
     };
-    if (vec_validate.contains(false)) { return; }
+    if (vec_validate.contains(false) && !CheckIsASTM173()) { return; }
     //ui.textBrowser->clear();
     void CheckDir();
-    CheckIsASTM173();
-    PathWithLatFolder.clear();
-    PathWithPowerFiles.clear();
+    //CheckIsASTM173();
+    logic->PathWithLatFolder.clear();
+    logic->PathWithPowerFiles.clear();
     //QString _AM = ui.aMLineEdit->text();
-    QString _Press = ui.PressLineEdit->text();
-    QString _W = ui.WLineEdit->text();
-    QString _OZ = ui.OZLineEdit->text();
+    QString _Press = sgcnoaaWindow->ui.PressLineEdit->text();
+    QString _W = sgcnoaaWindow->ui.WLineEdit->text();
+    QString _OZ = sgcnoaaWindow->ui.OZLineEdit->text();
     QString _D = "1";// ui.DLineEdit->text();
-    QString _Beta = ui.BetaLineEdit->text();
+    QString _Beta = sgcnoaaWindow->ui.BetaLineEdit->text();
 
     bool control = false;
-    if (_Press.isEmpty() || _W.isEmpty(), _OZ.isEmpty() || _D.isEmpty() || _Beta.isEmpty(), BasicAM0.isEmpty()) {
-        Error();  return;
+    if (_Press.isEmpty() || _W.isEmpty(), _OZ.isEmpty() || _D.isEmpty() || _Beta.isEmpty(), logic->BasicAM0.isEmpty()) {
+        logic->Error();  return;
     }
 
     int VAR_CALC = 0;
@@ -45,21 +45,22 @@ void Solar_spectrum_calculator::CalcSolarSpectrum()
     //    GetVectorOfBeta(Beta_vec, Latitudes);
     //    VAR_CALC = 2;
     //}
-    QString path2spec_reserv = path2spec;
+    QString path2spec_reserv = logic->path2spec;
 
     /// <summary>
     /// Spectrum calculate
     /// </summary>
     /// <param name="isWithSC"></param>
     //AddTextInTextBrowser("Calculate AM is starting (data for user Spectrum)");
-    Solar_spectrum_calculator SSC;
-    SSC.BasicAM0 = BasicAM0;
-    SSC.CalcAMPowerATM(_Press, _W, _OZ, _D, _Beta, VAR_CALC, Beta_vec);
-    path2spec = SSC.Path_to_spec[0];
+    ///Solar_spectrum_calculator SSC(logic, this);;
+    //SSC.BasicAM0 = logic->BasicAM0;
+    this->BasicAM0 = logic->BasicAM0;
+    CalcAMPowerATM(_Press, _W, _OZ, _D, _Beta, VAR_CALC, Beta_vec);
+    logic->path2spec = this->Path_to_spec[0];
     //ui.label_22->setText(path2spec);
    // AddTextInTextBrowser("Get AM data for user Spectrum");
     
-	if (!AMStatData.isEmpty()) GetPowerAMPreriod(SSC.Path_to_power);
+	if (!logic->AMStatData.isEmpty()) GetPowerAMPreriod(this->Path_to_power);
 }
 
 
@@ -87,14 +88,16 @@ void Solar_spectrum_calculator::CalcAMPowerATM( QString _Press, QString _W, QStr
 
 void Solar_spectrum_calculator::GetPowerAMPreriod(QVector<QString>& Path_to_power)
 {
-    QVector<QMap<QString, double>> power_from_file = readPowerFileToVectorMap(Path_to_power[0]);
+   QVector<QMap<QString, double>> power_from_file = readPowerFileToVectorMap(Path_to_power[0]);
+   // QVector<QMap<QString, double>> power_from_file;
+	//logic->Read2DFile(Path_to_power[0], power_from_file);
 
     QVector<QMap<QString, double>> result;
 
     
-    for (int mapIndex = 0; mapIndex < AMStatData.size(); ++mapIndex)
+    for (int mapIndex = 0; mapIndex < logic->AMStatData.size(); ++mapIndex)
     {
-        const QMap<QString, int>& dataAMSD = AMStatData[mapIndex];
+        const QMap<QString, int>& dataAMSD = logic->AMStatData[mapIndex];
         const QMap<QString, double>& dataPFF = power_from_file[0];
         QMap<QString, double> resultMap;
         if (power_from_file[0].size() != dataAMSD.size()) return;
@@ -116,7 +119,7 @@ void Solar_spectrum_calculator::GetPowerAMPreriod(QVector<QString>& Path_to_powe
 
         result.append(resultMap);
     }
-    ShowTableWidgetAmStatisticOrPower(ui.tw_AMPowerATM, result, QString("Power"));
+    logic->ShowTableWidgetAmStatisticOrPower(sgcnoaaWindow->ui.tw_AMPowerATM, result, QString("Power"));
 
 }
 

@@ -8,20 +8,23 @@
 #include "Spectr_gen.h"
 
 
-class Solar_spectrum_calculator : public  SolarGeometryCalculatorNOAA
+class Solar_spectrum_calculator : public QObject
 {
     Q_OBJECT
 
 public:
-    Solar_spectrum_calculator(QWidget* parent = nullptr): SolarGeometryCalculatorNOAA(parent)
-
+    Solar_spectrum_calculator(SolarCellPowerLogic* logic, SolarGeometryCalculatorNOAA* sgcnoaaWindow) : logic(logic), sgcnoaaWindow(sgcnoaaWindow)
     {
-        connect(ui.pb_GetSpectrum, SIGNAL(clicked()), this, SLOT(CalcSolarSpectrum()));
+        CheckValidationATPres();
+        CheckValidationWaterVapor();
+        CheckValidationOzone();
+        CheckValidationTurbidityAOT();
+        connect(sgcnoaaWindow->ui.pb_GetSpectrum, SIGNAL(clicked()), this, SLOT(CalcSolarSpectrum()));
     }
     ~Solar_spectrum_calculator();
     //QVector <QString> PathWithLatFolder, PathWithPowerFiles;
 
-    //QString BasicAM0 = ".//Data/AM0.dat";
+    QString BasicAM0 = ".//Data/AM0.dat";
     QString Path = ".//Spectrum/";
     
     QVector<QString> Lat_name = {"9080","8070","7060","6050","5040","4030","3020", "2010","1000",
@@ -31,6 +34,9 @@ public:
    // QString path2spec = ".//Data/BasicAM";
     //QString BasicAM0 = ".//Data/AM0.dat";
   void CalcAMPowerATM( QString _Press, QString _W, QString _OZ, QString _D, QString _Beta, int VAR_CALC, QVector<double> Beta_vec);
+private:
+    SolarCellPowerLogic* logic;
+    SolarGeometryCalculatorNOAA* sgcnoaaWindow;
 
 private slots:
     void CalcSolarSpectrum();
@@ -43,7 +49,7 @@ private slots:
     bool CheckValidationOzone();
     bool CheckValidationTurbidityAOT();
 
-    void CheckIsASTM173();
+    bool CheckIsASTM173();
     QVector<QMap<QString, double>> readPowerFileToVectorMap(const QString& filePath);
     //void ShowTableWidgetPowerAmPeriod(const QVector<QMap<QString, int>>& PowerPeriodData);
     void SaveSpec(double BetaPar, double AMpar, QVector<double> Spectr, double * AM0_WL);

@@ -33,6 +33,9 @@
     <Filter Include="Source Files\WinPowerGraphs">
       <UniqueIdentifier>{6250d91c-9b6e-4a6c-9ced-7fda3a3a54d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Logic">
+      <UniqueIdentifier>{7069b595-4bad-4e84-9b29-974d71ef8a4c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="SolarGeometryCalculatorNOAA.qrc">
@@ -82,6 +85,9 @@
     <ClCompile Include="powercellgraphs.cpp">
       <Filter>Source Files\WinPowerGraphs</Filter>
     </ClCompile>
+    <ClCompile Include="SolarCellPowerLogic.cpp">
+      <Filter>Source Files\Logic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SGCNOAA.h">
@@ -106,6 +112,9 @@
     </QtMoc>
     <QtMoc Include="powercellgraphs.h">
       <Filter>Source Files\WinPowerGraphs</Filter>
+    </QtMoc>
+    <QtMoc Include="SolarCellPowerLogic.h">
+      <Filter>Source Files\Logic</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
