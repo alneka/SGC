@@ -49,11 +49,11 @@ public:
     QString pn[2][Shift];
 };
 
-//struct IntDoubleStruct
-//{
-//    int intData = 0;
-//    double doubleData = 0;
-//};
+struct IntDoubleStruct
+{
+    int intData = 0;
+    double doubleData = 0;
+};
 
 struct SpChPN {
     QVector<double> Ikz;

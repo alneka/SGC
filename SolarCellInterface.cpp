@@ -159,3 +159,4 @@ void SolarCell::setDisabledGroupButton(bool isDisabled)
 	sgcnoaaWindow->ui.pb_GetPowerAMPN->setDisabled(isDisabled);
 	sgcnoaaWindow->ui.pb_show_PowerCellGraphs->setDisabled(isDisabled);
 }
+

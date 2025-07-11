@@ -40,6 +40,7 @@ private:
 	SolarCellPowerLogic* logic;
 	SolarGeometryCalculatorNOAA* sgcnoaaWindow;
 	PowerCellGraphs* graphsWindow = nullptr; // окно графиков
+	
 public slots:
 	void showPowerCellGraphs();
 private slots:
@@ -55,7 +56,8 @@ private slots:
 	void input3();
 	void input4();
 	void input5();
-
-
+	
 	void setDisabledGroupButton(bool isDisabled);
+
+	void GetSolarCellPower();
 };

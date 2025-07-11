@@ -93,7 +93,7 @@ void SolarGeometryCalculatorNOAA::CalcNOAA() {
         {
             SGC.push_back(sgcnoaa.getSECFATMR());
         }
-
+        SGC.push_back(sgcnoaa.getSunRadVector());
 
         //SGC.push_back(vec_AM);
         ShowTableWidgetAmElev(SGC);

@@ -91,45 +91,45 @@ bool Solar_spectrum_calculator::CheckIsASTM173()
 }
 
 
-QVector<QMap<QString, double>>  Solar_spectrum_calculator::readPowerFileToVectorMap(const QString& filePath)
-{
-    QVector<QMap<QString, double>> dataVector;
-    QFile file(filePath);
-
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&file);
-        QMap<QString, double> dataMap;
-
-        while (!in.atEnd()) {
-            QString line = in.readLine();
-            QStringList values = line.split('\t', Qt::SkipEmptyParts);
-            if (values.size() == 2) {
-                bool ok1, ok2;
-                double value1 = values[0].toDouble(&ok1); 
-                double value2 = values[1].toDouble(&ok2);
-                if (ok1 && ok2) {
-                    QString key = QString::number(value1, 'f', 2); 
-                    dataMap[key] = value2;
-                }
-                else {
-                    std::cerr << "Ошибка при преобразовании строки в double: "
-                        << line.toStdString() << std::endl;
-                }
-            }
-            else if (!line.trimmed().isEmpty()) {
-                std::cerr << "Неверное количество значений в строке: "
-                    << line.toStdString() << std::endl;
-            }
-        }
-        file.close();
-
-        // Вставляем одну карту в вектор
-        dataVector.append(dataMap);
-    }
-    else {
-        std::cerr << "Не удалось открыть файл: "
-            << filePath.toStdString() << std::endl;
-    }
-
-    return dataVector;
-}
+//QVector<QMap<QString, double>>  Solar_spectrum_calculator::readPowerFileToVectorMap(const QString& filePath)
+//{
+//    QVector<QMap<QString, double>> dataVector;
+//    QFile file(filePath);
+//
+//    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+//        QTextStream in(&file);
+//        QMap<QString, double> dataMap;
+//
+//        while (!in.atEnd()) {
+//            QString line = in.readLine();
+//            QStringList values = line.split('\t', Qt::SkipEmptyParts);
+//            if (values.size() == 2) {
+//                bool ok1, ok2;
+//                double value1 = values[0].toDouble(&ok1); 
+//                double value2 = values[1].toDouble(&ok2);
+//                if (ok1 && ok2) {
+//                    QString key = QString::number(value1, 'f', 2); 
+//                    dataMap[key] = value2;
+//                }
+//                else {
+//                    std::cerr << "Ошибка при преобразовании строки в double: "
+//                        << line.toStdString() << std::endl;
+//                }
+//            }
+//            else if (!line.trimmed().isEmpty()) {
+//                std::cerr << "Неверное количество значений в строке: "
+//                    << line.toStdString() << std::endl;
+//            }
+//        }
+//        file.close();
+//
+//        // Вставляем одну карту в вектор
+//        dataVector.append(dataMap);
+//    }
+//    else {
+//        std::cerr << "Не удалось открыть файл: "
+//            << filePath.toStdString() << std::endl;
+//    }
+//
+//    return dataVector;
+//}

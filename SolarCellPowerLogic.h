@@ -1,9 +1,12 @@
 #pragma once
+#include <iostream>
+#include <QFile>
 #include <QLabel>
 
 #include "C:\Qt\qt\6.4.1\msvc2019_64\include\QtCore\qobject.h"
 #include <QtWidgets/qtablewidget.h>
 
+#include "PNTransition.h"
 
 
 class SolarCellPowerLogic :
@@ -18,15 +21,19 @@ public:
     QVector<double> SunRadVector;   
     QMap<QLineEdit*, QLabel*> statusLabelsMap;
     QVector <QString> PathWithLatFolder, PathWithPowerFiles;
+    QVector<QString> Path_to_spec;
+    QVector<QString> Path_to_power;
     QVector<QPair<int, int>> minMaxLambdaPN;
     //QVector<QMap<QString, int>> AMStatData;
     //QVector<double> SunRadVector;
+    QString Path = ".//Spectrum/";
     QString path2spec = ".//Data/BasicAM";
     QString BasicAM0 = ".//Data/AM0.dat";
+    QVector<QVector<IntDoubleStruct>> vecSolarCellPN;
     template < typename Templll >
     void ShowTableWidgetAmStatisticOrPower(QTableWidget* qtwidget, QVector<QMap<QString, Templll>>& AMData, QString ColName);
-    //template < typename TemplRead >
-    //void Read2DFile(QString filePath, QVector<TemplRead>& vectorData);
+    template < typename TemplRead >
+    void Read2DFile(QString filePath, QVector<TemplRead>& vectorData);
 public slots:
 
     void validateDataInput();
@@ -90,67 +97,71 @@ inline void SolarCellPowerLogic::ShowTableWidgetAmStatisticOrPower(QTableWidget*
 
 }
 
-//
-//template < typename TemplRead > //  QVector<QMap<QString, double>> or QVector<IntDoubleStruct>>
-//inline void SolarCellPowerLogic::Read2DFile(QString filePath, QVector<TemplRead>& vectorData)
-//{
-//   // QVector<IntDoubleStruct> dataFile;
-//    //QVector<QMap<QString, double>> dataVector;
-//
-//    QFile file(filePath);
-//    if constexpr (std::is_same_v<TemplRead, QMap<QString, double>>)
-//    {
-//	    
-//    }
-//    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-//        QTextStream in(&file);
-//        QMap<QString, double> dataMap;
-//        while (!in.atEnd()) {
-//            IntDoubleStruct dataIntDouble;
-//            QString line = in.readLine();
-//            QStringList values = line.split('\t', Qt::SkipEmptyParts);
-//            if (values.size() == 2) {
-//                bool ok1, ok2;
-//                int value1 = values[0].toInt(&ok1);
-//                double value2 = values[1].toDouble(&ok2);
-//                if (ok1 && ok2) {
-//                    if constexpr (std::is_same_v<TemplRead, QVector <IntDoubleStruct>>)
-//                    {
-//                        dataIntDouble.intData = value1;
-//                        dataIntDouble.doubleData = value2;
-//                    }
-//                    if constexpr (std::is_same_v<TemplRead, QMap<QString, double>>)
-//                    {
-//                        QString key = QString::number(value1, 'f', 2);
-//                        dataMap[key] = value2;
-//                    }
-//
-//                }
-//                else {
-//                    std::cerr << "Ошибка при преобразовании строки в int/double: "
-//                        << line.toStdString() << std::endl;
-//                }
-//            }
-//            else if (!line.trimmed().isEmpty()) {
-//                std::cerr << "Неверное количество значений в строке: "
-//                    << line.toStdString() << std::endl;
-//            }
-//            if constexpr (std::is_same_v<TemplRead, QVector <IntDoubleStruct>>)
-//            {
-//                // Вставляем одну карту в вектор
-//                vectorData.push_back(dataMap);
-//            }
-//        }
-//        file.close();
-//        if constexpr (std::is_same_v<TemplRead, QMap<QString, double>>)
-//        {
-//            vectorData.append(dataMap);
-//        }
-//    }
-//    else {
-//        std::cerr << "Не удалось открыть файл: "
-//            << filePath.toStdString() << std::endl;
-//    }
-//
-//    return dataFile;
-//}
+
+template < typename TemplRead > //  QVector<QMap<QString, double>> or QVector<IntDoubleStruct>>
+inline void SolarCellPowerLogic::Read2DFile(QString filePath, QVector<TemplRead>& vectorData)
+{
+   // QVector<IntDoubleStruct> dataFile;
+    //QVector<QMap<QString, double>> dataVector;
+
+    QFile file(filePath);
+   
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        std::cerr << "Не удалось открыть файл: "
+            << filePath.toStdString() << std::endl;
+        return;
+    }
+
+    QTextStream in(&file);
+    QMap<QString, double> dataMap;
+    while (!in.atEnd()) {
+        IntDoubleStruct dataIntDouble;
+        QString line = in.readLine();
+        QStringList values = line.split('\t', Qt::SkipEmptyParts);
+        if (values.size() == 2) {
+        bool ok1, ok2;
+            if constexpr (std::is_same_v<TemplRead,  IntDoubleStruct>)
+            {
+                int value1 = values[0].toInt(&ok1);
+                double value2 = values[1].toDouble(&ok2);
+                if (ok1 && ok2) {
+
+                    dataIntDouble.intData = value1;
+                    dataIntDouble.doubleData = value2;
+                }
+            }
+            else if constexpr (std::is_same_v<TemplRead, QMap<QString, double>>)
+            {
+                double value1 = values[0].toDouble(&ok1);
+                double value2 = values[1].toDouble(&ok2);
+                if (ok1 && ok2) {
+                    QString key = QString::number(value1, 'f', 2);
+                    dataMap[key] = value2;
+                }
+            }
+
+            
+            else {
+                std::cerr << "Ошибка при преобразовании строки в int/double: "
+                    << line.toStdString() << std::endl;
+            }
+        }
+        else if (!line.trimmed().isEmpty()) {
+            std::cerr << "Неверное количество значений в строке: "
+                << line.toStdString() << std::endl;
+        }
+        if constexpr (std::is_same_v<TemplRead, IntDoubleStruct>)
+        {
+            // Вставляем одну карту в вектор
+            vectorData.push_back(dataMap);
+        }
+    }
+    file.close();
+    if constexpr (std::is_same_v<TemplRead, QMap<QString, double>>)
+    {
+        vectorData.append(dataMap);
+    }
+
+
+   
+}
