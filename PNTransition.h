@@ -2,40 +2,35 @@
 
 
 #include <QList>
+#include <QMap>
 #include <QString>
 
 
 const int Shift = 29;
 
+struct PNEntry {
+    QString filePath; // путь к файлу
+    bool isRead;       // true, если путь задан
+};
+
 class PN {
 public:
     PN() {
-        this->pn[0] = "";
-        this->pn[1] = "";
-        this->pn[2] = "";
-        this->pn[3] = "";
-        this->pn[4] = "";
-        this->pn[5] = "";
+        // Инициализируем массив пустыми значениями
+        for (int i = 0; i < 6; ++i) {
+            pn[i].filePath = "";
+            pn[i].isRead = false;
+        }
     }
-    PN(QString& pn0) :PN() {
-        this->pn[0] = pn0;
-    }
-    PN(QString& pn0, QString& pn1) :PN(pn0) {
-        this->pn[1] = pn1;
-    }
-    PN(QString& pn0, QString& pn1, QString& pn2) :PN(pn0, pn1) {
-        this->pn[2] = pn2;
-    }
-    PN(QString& pn0, QString& pn1, QString& pn2, QString& pn3) :PN(pn0, pn1, pn2) {
-        this->pn[3] = pn3;
-    }
-    PN(QString& pn0, QString& pn1, QString& pn2, QString& pn3, QString& pn4) :PN(pn0, pn1, pn2, pn3) {
-        this->pn[4] = pn4;
-    }
-    PN(QString& pn0, QString& pn1, QString& pn2, QString& pn3, QString& pn4, QString& pn5) :PN(pn0, pn1, pn2, pn3, pn4) {
-        this->pn[5] = pn5;
-    }
-    QString pn[6];
+
+    PN(QString& pn0) :PN() { pn[0] = { pn0, true }; }
+    PN(QString& pn0, QString& pn1) :PN(pn0) { pn[1] = { pn1, true }; }
+    PN(QString& pn0, QString& pn1, QString& pn2) :PN(pn0, pn1) { pn[2] = { pn2, true }; }
+    PN(QString& pn0, QString& pn1, QString& pn2, QString& pn3) :PN(pn0, pn1, pn2) { pn[3] = { pn3, true }; }
+    PN(QString& pn0, QString& pn1, QString& pn2, QString& pn3, QString& pn4) :PN(pn0, pn1, pn2, pn3) { pn[4] = { pn4, true }; }
+    PN(QString& pn0, QString& pn1, QString& pn2, QString& pn3, QString& pn4, QString& pn5) :PN(pn0, pn1, pn2, pn3, pn4) { pn[5] = { pn5, true }; }
+
+    PNEntry pn[6]; // массив из 6 элементов PNEntry
 };
 
 class new_PN {

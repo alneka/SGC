@@ -2,13 +2,14 @@
 
 #include "PNTransition.h"
 #include "SolarGeometryCalculatorNOAA.h"
+#include "Solar_spectrum_calculator.h"
 
 class SolarCell : public QObject
 {
 	Q_OBJECT
 public:
-	
-	SolarCell(SolarCellPowerLogic* logic, SolarGeometryCalculatorNOAA* sgcnoaaWindow) : logic(logic), sgcnoaaWindow(sgcnoaaWindow)
+
+	SolarCell(SolarCellPowerLogic* logic, SolarGeometryCalculatorNOAA* sgcnoaaWindow, Solar_spectrum_calculator* solSpecCalc) : logic(logic), sgcnoaaWindow(sgcnoaaWindow), solSpecCalc(solSpecCalc)
 	{
 		CheckValidationCellSize();
 		CheckValidationUoc();
@@ -23,6 +24,8 @@ public:
 		connect(sgcnoaaWindow->ui.pb_6_pn, SIGNAL(clicked()), this, SLOT(input5()));
 		connect(sgcnoaaWindow->ui.pb_show_PowerCellGraphs, &QPushButton::clicked,
 			this, &SolarCell::showPowerCellGraphs);
+		connect(sgcnoaaWindow->ui.pb_GetPowerAMPN, SIGNAL(clicked()), this, SLOT(GetPowerPNrange()));
+
 
 	};
 	~SolarCell();
@@ -32,15 +35,16 @@ public:
 	double SizeSC = 9;
 	inline double sq(double x) { return x * x; }
 	inline int sq(int x) { return x * x; }
-	int n_pn = 0;
+
 
 private:
 	QList<QGroupBox*> arrBox;
-	PN all_pn;
+
 	SolarCellPowerLogic* logic;
 	SolarGeometryCalculatorNOAA* sgcnoaaWindow;
+	Solar_spectrum_calculator* solSpecCalc;
 	PowerCellGraphs* graphsWindow = nullptr; // окно графиков
-	
+
 public slots:
 	void showPowerCellGraphs();
 private slots:
@@ -56,8 +60,10 @@ private slots:
 	void input3();
 	void input4();
 	void input5();
-	
-	void setDisabledGroupButton(bool isDisabled);
 
-	void GetSolarCellPower();
+	void setDisabledGroupButton(bool isDisabled);
+	void GetAllAMPath(QHash<QString, QString>&Path_with_AM_Files);
+	void GetPowerPNrange();
+	bool GetSolarCellPower();
+
 };

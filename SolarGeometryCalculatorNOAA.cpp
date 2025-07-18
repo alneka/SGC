@@ -38,7 +38,7 @@ SolarGeometryCalculatorNOAA::SolarGeometryCalculatorNOAA(QWidget *parent)
     //    this, &SolarGeometryCalculatorNOAA::on_showGraphsButton_clicked);
         // Создаём дочерние классы с доступом к logic и ui
     auto spectrumCalculator = new Solar_spectrum_calculator(logic, this);
-    auto solarCell = new SolarCell(logic, this);
+    auto solarCell = new SolarCell(logic, this, spectrumCalculator);
 }
 
 SolarGeometryCalculatorNOAA::~SolarGeometryCalculatorNOAA()
@@ -52,7 +52,7 @@ void SolarGeometryCalculatorNOAA::CalcNOAA() {
 		CheckValidationLatitude(),
 		//CheckValidationIntervalSec()
 		};
-    if (!ui.cB_isElevation->isChecked() && !ui.cb_isAM->isChecked() && !ui.cB_isElevation_with_refr->isChecked() && !ui.cb_isAM_with_refr->isChecked()) { return; }
+    if (!ui.cB_isElevation->isChecked() && !ui.cb_isAM->isChecked()) { return; }
     if(vec_validate.contains(false)) { return; }
    //if()
     //{
@@ -76,20 +76,12 @@ void SolarGeometryCalculatorNOAA::CalcNOAA() {
         logic->SunRadVector = sgcnoaa.getSunRadVector();
         //QVector<double> vec_SEA = sgcnoaa.getSEA();
         QVector<QVector<double>> SGC ;
-		if(ui.cb_isAM->isChecked())
-		{
-            SGC.push_back(sgcnoaa.getAM());
-		}
 
-        if (ui.cB_isElevation->isChecked())
-        {
-            SGC.push_back(sgcnoaa.getSEA());
-        }
-        if (ui.cb_isAM_with_refr->isChecked())
+        if (ui.cb_isAM->isChecked())
         {
             SGC.push_back(sgcnoaa.getAMC());
         }
-        if (ui.cB_isElevation_with_refr->isChecked())
+        if (ui.cB_isElevation->isChecked())
         {
             SGC.push_back(sgcnoaa.getSECFATMR());
         }
@@ -407,15 +399,17 @@ void SolarGeometryCalculatorNOAA::ShowTableWidgetAmElev(const QVector<QVector<do
         {
             columnNames.push_back("Elev");
         }
-        if (ui.cb_isAM_with_refr->isChecked())
+       /* if (ui.cb_isAM_with_refr->isChecked())
         {
             columnNames.push_back("AM+Refr");
         }
         if (ui.cB_isElevation_with_refr->isChecked())
         {
             columnNames.push_back("Elev+Refr");
-        }
-
+        }*/
+       
+            columnNames.push_back("SunRadVector");
+        
         // ui.tw_SGC->setHorizontalHeaderLabels({ "Время (сек)", "Юлианская дата" });
 
         for (int i = 0; i < SGCData.size(); ++i) {
@@ -477,11 +471,11 @@ QVector<QMap<QString, int>> SolarGeometryCalculatorNOAA::GetAmStatistic()
     }
     CheckRowTableWidget(frequencyMapAm, "AM", minValue, maxValue, precision);
     AMStat.push_back(frequencyMapAm);
-    if (ui.cb_isAM_with_refr->isChecked())
-    {
-        CheckRowTableWidget(frequencyMapAmCor, "AM+Refr", minValue, maxValue, precision);
-        AMStat.push_back(frequencyMapAmCor);
-    }
+    //if (ui.cb_isAM_with_refr->isChecked())
+    //{
+    //    CheckRowTableWidget(frequencyMapAmCor, "AM+Refr", minValue, maxValue, precision);
+    //    AMStat.push_back(frequencyMapAmCor);
+    //}
     
     return AMStat;
 }

@@ -21,7 +21,7 @@ public:
     QVector<double> SunRadVector;   
     QMap<QLineEdit*, QLabel*> statusLabelsMap;
     QVector <QString> PathWithLatFolder, PathWithPowerFiles;
-    QVector<QString> Path_to_spec;
+    QVector<QString> Path_to_solar_spec;
     QVector<QString> Path_to_power;
     QVector<QPair<int, int>> minMaxLambdaPN;
     //QVector<QMap<QString, int>> AMStatData;
@@ -29,15 +29,18 @@ public:
     QString Path = ".//Spectrum/";
     QString path2spec = ".//Data/BasicAM";
     QString BasicAM0 = ".//Data/AM0.dat";
-    QVector<QVector<IntDoubleStruct>> vecSolarCellPN;
+    PN all_pn;
+    int n_pn = 0;
+   QVector<IntDoubleStruct> vecSolarCellPN[6];
     template < typename Templll >
     void ShowTableWidgetAmStatisticOrPower(QTableWidget* qtwidget, QVector<QMap<QString, Templll>>& AMData, QString ColName);
     template < typename TemplRead >
     void Read2DFile(QString filePath, QVector<TemplRead>& vectorData);
+
 public slots:
-
+    void GetDefaultAMStatData();
     void validateDataInput();
-
+    bool GetSolarCellSpectrum();
     void info();
     void Error();
 
@@ -61,11 +64,16 @@ inline void SolarCellPowerLogic::ShowTableWidgetAmStatisticOrPower(QTableWidget*
         headers << "N";
         if (colCount > 0)
         {
-            headers << QString(ColName);
+          
             if (colCount > 1)
             {
-                headers << ColName + "+Ref";
+                for (int i = 1; i < colCount+1; i++)
+                {
+                    headers << ColName + QString::number(i);
+                }
+                
             }
+            else  headers << QString(ColName);
 
         }
 
@@ -124,7 +132,7 @@ inline void SolarCellPowerLogic::Read2DFile(QString filePath, QVector<TemplRead>
             {
                 int value1 = values[0].toInt(&ok1);
                 double value2 = values[1].toDouble(&ok2);
-                if (ok1 && ok2) {
+                if (ok1 && ok2 && value1 != 0) {
 
                     dataIntDouble.intData = value1;
                     dataIntDouble.doubleData = value2;
@@ -134,7 +142,7 @@ inline void SolarCellPowerLogic::Read2DFile(QString filePath, QVector<TemplRead>
             {
                 double value1 = values[0].toDouble(&ok1);
                 double value2 = values[1].toDouble(&ok2);
-                if (ok1 && ok2) {
+                if (ok1 && ok2 && value1 != 0) {
                     QString key = QString::number(value1, 'f', 2);
                     dataMap[key] = value2;
                 }
@@ -153,7 +161,8 @@ inline void SolarCellPowerLogic::Read2DFile(QString filePath, QVector<TemplRead>
         if constexpr (std::is_same_v<TemplRead, IntDoubleStruct>)
         {
             // Вставляем одну карту в вектор
-            vectorData.push_back(dataMap);
+            if(dataIntDouble.intData != 0 && dataIntDouble.doubleData != 0.0)
+            vectorData.push_back(dataIntDouble);
         }
     }
     file.close();

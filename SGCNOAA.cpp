@@ -586,7 +586,7 @@ void SGCNOAA::getResult()
 //        Solar_spectrum_calculator SSC;
 //        SSC.BasicAM0 = BasicAM0;
 //        SSC.CalcAMPowerATM( _Press, _W, _OZ, _D, _Beta, VAR_CALC, Beta_vec);
-//        path2spec = SSC.Path_to_spec[0];
+//        path2spec = SSC.Path_to_solar_spec[0];
 //        //ui.label_22->setText(path2spec);
 //       // AddTextInTextBrowser("Get AM data for user Spectrum");
 //        /// <summary>
@@ -596,9 +596,9 @@ void SGCNOAA::getResult()
 ///// 
 //        if (VAR_CALC == 2) {
 //            PathWithLatFolder.push_back(path2spec_reserv);
-//            if (SSC.Path_to_spec.size() == Latitudes.size())
-//                for (int i = 0; i < SSC.Path_to_spec.size(); i++) {
-//                    PathWithLatFolder.push_back(SSC.Path_to_spec[i]);
+//            if (SSC.Path_to_solar_spec.size() == Latitudes.size())
+//                for (int i = 0; i < SSC.Path_to_solar_spec.size(); i++) {
+//                    PathWithLatFolder.push_back(SSC.Path_to_solar_spec[i]);
 //                    PathWithPowerFiles.push_back(SSC.Path_to_power[i]);
 //                }
 //        }

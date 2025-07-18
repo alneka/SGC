@@ -1,6 +1,7 @@
 ﻿#include "SolarCellPowerLogic.h"
 
 #include <iostream>
+#include <QDir>
 #include <QLineEdit>
 #include <QMessageBox>
 
@@ -14,7 +15,21 @@ SolarCellPowerLogic::~SolarCellPowerLogic()
 {
 }
 
-
+void SolarCellPowerLogic::GetDefaultAMStatData()
+{
+    QMap<QString, int> dataAMSD;
+    for (double k = 1.0; k <= 10.0; k += 0.01)
+    {
+      
+        //QString key = QString::number(k, 'f', (k == static_cast<int>(k)) ? 0 : 2);
+        QString key = QString::number(k, 'f', 2)
+            
+            .remove(QRegularExpression("\\.$")); // убираем точку если осталас
+        dataAMSD[key] = 1;
+    	
+    }
+    AMStatData.append(dataAMSD);
+}
 void SolarCellPowerLogic::validateDataInput()
 {
 
@@ -110,4 +125,21 @@ void SolarCellPowerLogic::Error()
     //msg.setText(trUtf8("Рассположение данных: \n  Файлы с числом АМ на широте : /latitude/ широта.dat \n Файлы со спектрами солнечного излучения : /spectors/ AM.dat"));
     msg.setText(st);
     msg.exec();
+}
+
+bool SolarCellPowerLogic::GetSolarCellSpectrum()
+{
+   
+    for (int i = 0; i <n_pn; ++i)
+    {
+        if (all_pn.pn[i].filePath.isEmpty()) return false;
+        if (all_pn.pn[i].isRead)
+            continue;
+        QVector<IntDoubleStruct> vecPN;
+        Read2DFile(all_pn.pn[i].filePath, vecPN);
+        if (!vecPN.isEmpty()) all_pn.pn[i].isRead = true;
+        vecSolarCellPN[i].clear();
+        vecSolarCellPN[i].append(vecPN);
+    }
+    return true;
 }

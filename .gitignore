@@ -361,3 +361,16 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+Data/
+latitude/
+Spectrum/
+AM(Elevation) on long = -105 lat =40/
+AM_Elevation_long_-105_lat_40/
+
+info.cpp
+SolarCell.cpp
+SolarCell.h
+SolarCellInterface.cpp
+SolarCellPowerLogic.cpp
+SolarCellPowerLogic.h

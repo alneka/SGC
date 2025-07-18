@@ -62,15 +62,15 @@ void SolarCell::GetNumPN() {
 
 	sgcnoaaWindow->ui.groupBox_2->setDisabled(false);
 
-	n_pn = t_Num_pn.toInt();
+	logic->n_pn = t_Num_pn.toInt();
 
-	for (int i = 0; i < n_pn; ++i) {
+	for (int i = 0; i < logic->n_pn; ++i) {
 		arrBox[i]->setDisabled(false);
 	}
 
 	bool control = false;
-	for (int i = 0; i < n_pn; ++i) {
-		if (all_pn.pn[i] == "") control = true;
+	for (int i = 0; i < logic->n_pn; ++i) {
+		if (logic->all_pn.pn[i].filePath == "") control = true;
 	}
 
 	if (control == true) {
@@ -100,44 +100,50 @@ void SolarCell::GetAddress(QString& add, QLabel* _label)
 
 void SolarCell::input0()
 {
-	GetAddress(all_pn.pn[0], sgcnoaaWindow->ui.label_9);
-	if (n_pn == 1) {
+	GetAddress(logic->all_pn.pn[0].filePath, sgcnoaaWindow->ui.label_9);
+	logic->all_pn.pn[0].isRead = false;
+	if (logic->n_pn == 1) {
 		setDisabledGroupButton(false);
 	}
 }
 void SolarCell::input1()
 {
-	GetAddress(all_pn.pn[1], sgcnoaaWindow->ui.label_10);
-	if (n_pn == 2) {
+	GetAddress(logic->all_pn.pn[1].filePath, sgcnoaaWindow->ui.label_10);
+	logic->all_pn.pn[1].isRead = false;
+	if (logic->n_pn == 2) {
 		setDisabledGroupButton(false);
 	}
 }
 void SolarCell::input2()
 {
-	GetAddress(all_pn.pn[2], sgcnoaaWindow->ui.label_11);
-	if (n_pn == 3) {
+	GetAddress(logic->all_pn.pn[2].filePath, sgcnoaaWindow->ui.label_11);
+	logic->all_pn.pn[2].isRead = false;
+	if (logic->n_pn == 3) {
 		setDisabledGroupButton(false);
 	}
 }
 void SolarCell::input3()
 {
-	GetAddress(all_pn.pn[3], sgcnoaaWindow->ui.label_19);
-	if (n_pn == 4) {
+	GetAddress(logic->all_pn.pn[3].filePath, sgcnoaaWindow->ui.label_19);
+	logic->all_pn.pn[3].isRead = false;
+	if (logic->n_pn == 4) {
 		setDisabledGroupButton(false);
 	}
 }
 void SolarCell::input4()
 {
-	GetAddress(all_pn.pn[4], sgcnoaaWindow->ui.label_17);
-	if (n_pn == 5) {
+	GetAddress(logic->all_pn.pn[4].filePath, sgcnoaaWindow->ui.label_17);
+	logic->all_pn.pn[4].isRead = false;
+	if (logic->n_pn == 5) {
 		setDisabledGroupButton(false);
 
 	}
 }
 void SolarCell::input5()
 {
-	GetAddress(all_pn.pn[5], sgcnoaaWindow->ui.label_15);
-	if (n_pn >= 6) {
+	GetAddress(logic->all_pn.pn[5].filePath, sgcnoaaWindow->ui.label_15);
+	logic->all_pn.pn[5].isRead = false;
+	if (logic->n_pn >= 6) {
 		setDisabledGroupButton(false);
 	}
 }

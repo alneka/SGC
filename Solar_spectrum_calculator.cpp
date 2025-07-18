@@ -56,11 +56,11 @@ void Solar_spectrum_calculator::CalcSolarSpectrum()
     //SSC.BasicAM0 = logic->BasicAM0;
     this->BasicAM0 = logic->BasicAM0;
     CalcAMPowerATM(_Press, _W, _OZ, _D, _Beta, VAR_CALC, Beta_vec);
-    logic->path2spec = logic->Path_to_spec[0];
+    logic->path2spec = logic->Path_to_solar_spec[0];
     //ui.label_22->setText(path2spec);
    // AddTextInTextBrowser("Get AM data for user Spectrum");
-    
-	if (!logic->AMStatData.isEmpty()) GetPowerAMPreriod(logic->Path_to_power);
+    if (logic->AMStatData.isEmpty()) logic->GetDefaultAMStatData();
+	if (!logic->AMStatData.isEmpty()) GetPowerAM(logic->Path_to_power);
 }
 
 
@@ -76,7 +76,7 @@ void Solar_spectrum_calculator::CalcAMPowerATM( QString _Press, QString _W, QStr
     double OZ = _OZ.toDouble();
     GetSpectAM0andAlpha(BasicAM0);
     Set_AM_Power_beta(BetaPar, 1.0, 10.0, 0.01, D, Press, W, OZ, logic->Path);
-    logic->Path_to_spec.push_back(logic->Path + "M" + QString::number(BetaPar));
+    logic->Path_to_solar_spec.push_back(logic->Path + "M" + QString::number(BetaPar));
     logic->Path_to_power.push_back(logic->Path + "M" + QString::number(BetaPar) + "/" + "M" + QString::number(BetaPar) + "power" + ".dat");
 	
 }
@@ -86,7 +86,7 @@ void Solar_spectrum_calculator::CalcAMPowerATM( QString _Press, QString _W, QStr
 
 
 
-void Solar_spectrum_calculator::GetPowerAMPreriod(QVector<QString>& Path_to_power)
+void Solar_spectrum_calculator::GetPowerAM(QVector<QString>& Path_to_power)
 {
    //QVector<QMap<QString, double>> power_from_file = readPowerFileToVectorMap(Path_to_power[0]);
    QVector<QMap<QString, double>> power_from_file;
@@ -108,7 +108,7 @@ void Solar_spectrum_calculator::GetPowerAMPreriod(QVector<QString>& Path_to_powe
 
             if (dataPFF.contains(key)) {
                 double power = dataPFF.value(key);
-                resultMap[key] = power * am_count;
+                resultMap[key] = power;// *am_count;
             }
             else {
                 std::cerr << "Ключ " << key.toStdString()
@@ -122,6 +122,9 @@ void Solar_spectrum_calculator::GetPowerAMPreriod(QVector<QString>& Path_to_powe
     logic->ShowTableWidgetAmStatisticOrPower(sgcnoaaWindow->ui.tw_AMPowerATM, result, QString("Power"));
 
 }
+
+
+
 
 
 //void Solar_spectrum_calculator::ShowTableWidgetPowerAmPeriod(const QVector<QMap<QString, int>>& PowerPeriodData)
