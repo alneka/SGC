@@ -8,11 +8,15 @@
 #include <QTextStream>
 #include <QMessageBox>
 
+#include "powercellgraphs.h"
+#include "SolarCell.h"
+#include "Solar_spectrum_calculator.h"
+
 
 #pragma execution_character_set("")
 
 SolarGeometryCalculatorNOAA::SolarGeometryCalculatorNOAA(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent), logic(new SolarCellPowerLogic(this))
 {
     ui.setupUi(this);
     //QRegularExpression rx("^([0-9]{4}) (0[1-9]|1[0-2]) (0[1-9]|[12][0-9]|3[01]) (0[0-9]|1[0-9]|2[0-3]):([0-5][0-9])$");
@@ -26,15 +30,21 @@ SolarGeometryCalculatorNOAA::SolarGeometryCalculatorNOAA(QWidget *parent)
     //ui.le_UTC_Start_Date->setValidator(regexValidator);
     //ui.le_UTC_End_Date->setValidator(regexValidator);
 
-    connect(ui.pb_SGC_start, SIGNAL(clicked()), this, SLOT(InputData()));
+    connect(ui.pb_SGC_start, SIGNAL(clicked()), this, SLOT(CalcNOAA()));
     connect(ui.pb_SGC_AM_Elev_save, SIGNAL(clicked()), this, SLOT(SaveSGC()));
     //connect(ui.le_UTC_Start_Date, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::CheckValidationTime(*this));
+    //connect(ui.pb_GetSpectrum, SIGNAL(clicked()), this, SLOT(onSpectrumButtonClicked()));
+    //connect(ui.pb_show_PowerCellGraphs, &QPushButton::clicked,
+    //    this, &SolarGeometryCalculatorNOAA::on_showGraphsButton_clicked);
+        // Создаём дочерние классы с доступом к logic и ui
+    auto spectrumCalculator = new Solar_spectrum_calculator(logic, this);
+    auto solarCell = new SolarCell(logic, this, spectrumCalculator);
 }
 
 SolarGeometryCalculatorNOAA::~SolarGeometryCalculatorNOAA()
 {}
 
-void SolarGeometryCalculatorNOAA::InputData() {
+void SolarGeometryCalculatorNOAA::CalcNOAA() {
 
     QVector<bool> vec_validate = { CheckValidationTime(ui.le_UTC_Start_Date, ui.l_UTC_Start_Date),
     	CheckValidationTime(ui.le_UTC_End_Date, ui.l_UTC_End_Date),
@@ -42,7 +52,7 @@ void SolarGeometryCalculatorNOAA::InputData() {
 		CheckValidationLatitude(),
 		//CheckValidationIntervalSec()
 		};
-    if (!ui.cB_isElevation->isChecked() && !ui.cB_isElevation->isChecked() && !ui.cB_isElevation_with_refr->isChecked() && !ui.cB_isElevation_with_refr->isChecked()) { return; }
+    if (!ui.cB_isElevation->isChecked() && !ui.cb_isAM->isChecked()) { return; }
     if(vec_validate.contains(false)) { return; }
    //if()
     //{
@@ -63,33 +73,26 @@ void SolarGeometryCalculatorNOAA::InputData() {
         SGCNOAA sgcnoaa(starDateTime, endDateTime, latitude, longitude, interval);
 
         sgcnoaa.getResult();
-        
+        logic->SunRadVector = sgcnoaa.getSunRadVector();
         //QVector<double> vec_SEA = sgcnoaa.getSEA();
         QVector<QVector<double>> SGC ;
-		if(ui.cb_isAM->isChecked())
-		{
-            SGC.push_back(sgcnoaa.getAM());
-		}
 
-        if (ui.cB_isElevation->isChecked())
-        {
-            SGC.push_back(sgcnoaa.getSEA());
-        }
-        if (ui.cb_isAM_with_refr->isChecked())
+        if (ui.cb_isAM->isChecked())
         {
             SGC.push_back(sgcnoaa.getAMC());
         }
-        if (ui.cB_isElevation_with_refr->isChecked())
+        if (ui.cB_isElevation->isChecked())
         {
             SGC.push_back(sgcnoaa.getSECFATMR());
         }
-
+        SGC.push_back(sgcnoaa.getSunRadVector());
 
         //SGC.push_back(vec_AM);
         ShowTableWidgetAmElev(SGC);
-        QVector<QMap<QString, int>> AMStatData;
-        AMStatData = GetAmStatistic();
-        ShowTableWidgetAmStatistic(AMStatData);
+        logic->AMStatData.clear();
+        logic->AMStatData = GetAmStatistic();
+        //ShowTableWidgetAmStatistic(AMStatData);
+        logic->ShowTableWidgetAmStatisticOrPower(ui.tw_SGC_AM_statistic, logic->AMStatData, QString("AM"));
  /*       QStandardItemModel* model = new QStandardItemModel();
 
         for (double value : vec_AM) {
@@ -227,7 +230,7 @@ bool SolarGeometryCalculatorNOAA::CheckValidationTime(QLineEdit* lineEdit, QLabe
         // например, показать сообщение пользователю.
         //lineEdit->setText("2025-01-01 00:00");
     }
-    statusLabelsMap.insert(lineEdit, statusLabel);
+    logic->statusLabelsMap.insert(lineEdit, statusLabel);
     connect(lineEdit, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDateTimeInput);
     //QString input = dateTimeString; // Копируем для изменения
    // int pos = 0;
@@ -248,7 +251,7 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
     }
 
     // Находим соответствующий QLabel для статуса
-    QLabel* currentStatusLabel = statusLabelsMap.value(editor, nullptr);
+    QLabel* currentStatusLabel = logic->statusLabelsMap.value(editor, nullptr);
     if (!currentStatusLabel) {
         qDebug() << "No status label found for editor:" << editor;
         // Можно создать временный QLabel или просто выводить в qDebug
@@ -306,8 +309,9 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
         QDoubleValidator* lonValidator = new QDoubleValidator(-180.0, 180.0, 7, ui.le_longitude);
         lonValidator->setNotation(QDoubleValidator::StandardNotation);
         ui.le_longitude->setValidator(lonValidator);
-        statusLabelsMap.insert(ui.le_longitude, ui.l_longitude);
-        connect(ui.le_longitude, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDataSGCInput);
+        logic->statusLabelsMap.insert(ui.le_longitude, ui.l_longitude);
+        connect(ui.le_longitude, &QLineEdit::textChanged, [this]() {
+            logic->validateDataInput(); });
         QString text = ui.le_longitude->text();
 		int pos = 0;
 	    return lonValidator->validate(text, pos) == QValidator::Acceptable;
@@ -318,8 +322,9 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
         QDoubleValidator* latValidator = new QDoubleValidator(-90.0, 90.0, 7, ui.le_latitude); // 7 знаков после запятой
         latValidator->setNotation(QDoubleValidator::StandardNotation); // Обычная десятичная запись
         ui.le_latitude->setValidator(latValidator);
-        statusLabelsMap.insert(ui.le_latitude, ui.l_latitude);
-        connect(ui.le_latitude, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDataSGCInput);
+        logic->statusLabelsMap.insert(ui.le_latitude, ui.l_latitude);
+        connect(ui.le_latitude, &QLineEdit::textChanged, [this]() {
+            logic->validateDataInput(); });
         QString text = ui.le_latitude->text();
         int pos = 0;
         return latValidator->validate(text, pos) == QValidator::Acceptable;
@@ -332,50 +337,50 @@ void SolarGeometryCalculatorNOAA::validateDateTimeInput() {
 //    QIntValidator* intervalValidator = new QIntValidator(0, 2147483647, ui.le_interval_time); // От 0 до макс. int
 //    ui.le_interval_time->setValidator(intervalValidator);
 //    statusLabelsMap.insert(ui.le_interval_time, ui.l_interval_time);
-//    connect(ui.le_interval_time, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDataSGCInput);
+//    connect(ui.le_interval_time, &QLineEdit::textChanged, this, &SolarGeometryCalculatorNOAA::validateDataInput);
 //    QString text = ui.le_interval_time->text();
 //    int pos = 0;
 //    return intervalValidator->validate(text, pos) == QValidator::Acceptable;
 //}
  
-void SolarGeometryCalculatorNOAA::validateDataSGCInput()
-{
-   
-    // Получаем указатель на QLineEdit, который отправил сигнал
-    QLineEdit* edit = qobject_cast<QLineEdit*>(sender());
-    if (!edit) {
-        qDebug() << "sender() is not a QLineEdit!";
-        return;
-    }
-
-    // Находим соответствующий QLabel для статуса
-    QLabel* statusLabel = statusLabelsMap.value(edit, nullptr);
-    if (!statusLabel) {
-        qDebug() << "No status label found for editor:" << edit;
-        // Можно создать временный QLabel или просто выводить в qDebug
-        // Для примера, просто выйдем, если метка не найдена
-        statusLabel = new QLabel(); // Временная метка, чтобы не было падения
-    }
-    if (!edit->text().isEmpty() && !edit->hasAcceptableInput()) {
-        // Ввод есть, но он не соответствует валидатору
-    
-        statusLabel->setStyleSheet("color: red;");
-    }
-    else if (edit->text().isEmpty() && edit->validator() != nullptr) {
-        // Поле пустое, но если есть валидатор, можно считать это промежуточным состоянием
-      
-        statusLabel->setStyleSheet("color: orange;");
-    }
-    else if (edit->hasAcceptableInput() || edit->text().isEmpty()) {
-        // Ввод корректен или поле пустое (и это допустимо)
-   
-        statusLabel->setStyleSheet("color: green;");
-        if (edit->text().isEmpty()) { // Если пусто, вернуть исходный текст метки
-            statusLabel->setStyleSheet("color: orange;");
-       
-        }
-    }
-}
+//void SolarGeometryCalculatorNOAA::validateDataInput()
+//{
+//   
+//    // Получаем указатель на QLineEdit, который отправил сигнал
+//    QLineEdit* edit = qobject_cast<QLineEdit*>(sender());
+//    if (!edit) {
+//        qDebug() << "sender() is not a QLineEdit!";
+//        return;
+//    }
+//
+//    // Находим соответствующий QLabel для статуса
+//    QLabel* statusLabel = logic->statusLabelsMap.value(edit, nullptr);
+//    if (!statusLabel) {
+//        qDebug() << "No status label found for editor:" << edit;
+//        // Можно создать временный QLabel или просто выводить в qDebug
+//        // Для примера, просто выйдем, если метка не найдена
+//        statusLabel = new QLabel(); // Временная метка, чтобы не было падения
+//    }
+//    if (!edit->text().isEmpty() && !edit->hasAcceptableInput()) {
+//        // Ввод есть, но он не соответствует валидатору
+//    
+//        statusLabel->setStyleSheet("color: red;");
+//    }
+//    else if (edit->text().isEmpty() && edit->validator() != nullptr) {
+//        // Поле пустое, но если есть валидатор, можно считать это промежуточным состоянием
+//      
+//        statusLabel->setStyleSheet("color: orange;");
+//    }
+//    else if (edit->hasAcceptableInput() || edit->text().isEmpty()) {
+//        // Ввод корректен или поле пустое (и это допустимо)
+//   
+//        statusLabel->setStyleSheet("color: green;");
+//        if (edit->text().isEmpty()) { // Если пусто, вернуть исходный текст метки
+//            statusLabel->setStyleSheet("color: orange;");
+//       
+//        }
+//    }
+//}
 
 void SolarGeometryCalculatorNOAA::ShowTableWidgetAmElev(const QVector<QVector<double>>& SGCData)
 {
@@ -394,15 +399,17 @@ void SolarGeometryCalculatorNOAA::ShowTableWidgetAmElev(const QVector<QVector<do
         {
             columnNames.push_back("Elev");
         }
-        if (ui.cb_isAM_with_refr->isChecked())
+       /* if (ui.cb_isAM_with_refr->isChecked())
         {
             columnNames.push_back("AM+Refr");
         }
         if (ui.cB_isElevation_with_refr->isChecked())
         {
             columnNames.push_back("Elev+Refr");
-        }
-
+        }*/
+       
+            columnNames.push_back("SunRadVector");
+        
         // ui.tw_SGC->setHorizontalHeaderLabels({ "Время (сек)", "Юлианская дата" });
 
         for (int i = 0; i < SGCData.size(); ++i) {
@@ -448,78 +455,129 @@ void SolarGeometryCalculatorNOAA::CheckRowTableWidget(QMap<QString, int>& freque
 QVector<QMap<QString, int>> SolarGeometryCalculatorNOAA::GetAmStatistic()
 {
     QVector<QMap<QString, int>> AMStat;
-    if (!ui.tw_SGC->rowCount() == 0 && !ui.tw_SGC->columnCount() == 0)
-    {
-        const double minValue = 1.00;
-        const double maxValue = 10.00;
-        const double step = 0.01;
-        const int precision = 2;
+    if (ui.tw_SGC->rowCount() == 0 && ui.tw_SGC->columnCount() == 0) return AMStat;
+    
+    const double minValue = 1.00;
+    const double maxValue = 10.00;
+    const double step = 0.01;
+    const int precision = 2;
 
-        // Подготовим карту частот
-        QMap<QString, int> frequencyMapAm, frequencyMapAmCor;
-        for (double val = minValue; val <= maxValue + 1e-6; val += step) {
-            QString key = QString::number(val, 'f', precision);
-            frequencyMapAm[key] = 0;
-            frequencyMapAmCor[key] = 0;
-        }
-        CheckRowTableWidget(frequencyMapAm, "AM", minValue, maxValue, precision);
-        AMStat.push_back(frequencyMapAm);
-        if (ui.cb_isAM_with_refr->isChecked())
-        {
-            CheckRowTableWidget(frequencyMapAmCor, "AM+Refr", minValue, maxValue, precision);
-            AMStat.push_back(frequencyMapAmCor);
-        }
+    // Подготовим карту частот
+    QMap<QString, int> frequencyMapAm, frequencyMapAmCor;
+    for (double val = minValue; val <= maxValue + 1e-6; val += step) {
+        QString key = QString::number(val, 'f', precision);
+        frequencyMapAm[key] = 0;
+        frequencyMapAmCor[key] = 0;
     }
+    CheckRowTableWidget(frequencyMapAm, "AM", minValue, maxValue, precision);
+    AMStat.push_back(frequencyMapAm);
+    //if (ui.cb_isAM_with_refr->isChecked())
+    //{
+    //    CheckRowTableWidget(frequencyMapAmCor, "AM+Refr", minValue, maxValue, precision);
+    //    AMStat.push_back(frequencyMapAmCor);
+    //}
+    
     return AMStat;
 }
-void SolarGeometryCalculatorNOAA::ShowTableWidgetAmStatistic(const  QVector<QMap<QString, int>>& AMStat)
-{
-    if (AMStat.isEmpty())
-        return;
+//void SolarGeometryCalculatorNOAA::ShowTableWidgetAmStatistic(const  QVector<QMap<QString, int>>& AMStat)
+//{
+//    if (AMStat.isEmpty())
+//        return;
+//
+//    // Все QMap имеют одинаковые ключи
+//    const int rowCount = AMStat[0].size(); // количество уникальных AM значений
+//    const int colCount = AMStat.size();    // количество наборов статистики
+//
+//    ui.tw_SGC_AM_statistic->clear();
+//    ui.tw_SGC_AM_statistic->setRowCount(rowCount);
+//    ui.tw_SGC_AM_statistic->setColumnCount(colCount + 1); // +1 — столбец для ключей (AM)
+//
+//    // Заголовки столбцов
+//    QStringList headers;
+//    headers << "N";
+//    if (colCount > 0)
+//    {
+//        headers << QString("AM");
+//        if (colCount > 1)
+//        {
+//            headers << QString("AM+Cor");
+//        }
+//    }
+//        
+//    
+//    ui.tw_SGC_AM_statistic->setHorizontalHeaderLabels(headers);
+//
+//    // Получим упорядоченные ключи
+//    QStringList keys = AMStat[0].keys();
+//
+//    // Заполняем первую колонку (AM значения)
+//    for (int row = 0; row < rowCount; ++row) {
+//        ui.tw_SGC_AM_statistic->setItem(row, 0, new QTableWidgetItem(keys[row]));
+//    }
+//
+//    // Заполняем значения статистики
+//    for (int col = 0; col < colCount; ++col) {
+//        const QMap<QString, int>& map = AMStat[col];
+//        for (int row = 0; row < rowCount; ++row) {
+//            QString key = keys[row];
+//            int value = map.value(key, 0); // безопасно, даже если нет ключа
+//            ui.tw_SGC_AM_statistic->setItem(row, col + 1, new QTableWidgetItem(QString::number(value)));
+//        }
+//    }
+//
+//    ui.tw_SGC_AM_statistic->resizeColumnsToContents();
+//}
 
-    // Все QMap имеют одинаковые ключи
-    const int rowCount = AMStat[0].size(); // количество уникальных AM значений
-    const int colCount = AMStat.size();    // количество наборов статистики
-
-    ui.tw_SGC_AM_statistic->clear();
-    ui.tw_SGC_AM_statistic->setRowCount(rowCount);
-    ui.tw_SGC_AM_statistic->setColumnCount(colCount + 1); // +1 — столбец для ключей (AM)
-
-    // Заголовки столбцов
-    QStringList headers;
-    headers << "N";
-    if (colCount > 0)
-    {
-        headers << QString("AM");
-        if (colCount > 1)
-        {
-            headers << QString("AM+Cor");
-        }
-    }
-        
-    
-    ui.tw_SGC_AM_statistic->setHorizontalHeaderLabels(headers);
-
-    // Получим упорядоченные ключи
-    QStringList keys = AMStat[0].keys();
-
-    // Заполняем первую колонку (AM значения)
-    for (int row = 0; row < rowCount; ++row) {
-        ui.tw_SGC_AM_statistic->setItem(row, 0, new QTableWidgetItem(keys[row]));
-    }
-
-    // Заполняем значения статистики
-    for (int col = 0; col < colCount; ++col) {
-        const QMap<QString, int>& map = AMStat[col];
-        for (int row = 0; row < rowCount; ++row) {
-            QString key = keys[row];
-            int value = map.value(key, 0); // безопасно, даже если нет ключа
-            ui.tw_SGC_AM_statistic->setItem(row, col + 1, new QTableWidgetItem(QString::number(value)));
-        }
-    }
-
-    ui.tw_SGC_AM_statistic->resizeColumnsToContents();
-}
+//void SolarGeometryCalculatorNOAA::ShowTableWidgetAmStatisticOrPower(QTableWidget* qtwidget, QVector<QMap<QString, int>>& AMData, QString ColName)
+//{
+//    if (AMData.isEmpty())
+//        return;
+//
+//    // Все QMap имеют одинаковые ключи
+//    const int rowCount = AMData[0].size(); // количество уникальных AM значений
+//    const int colCount = AMData.size();    // количество наборов статистики
+//
+//    qtwidget->clear();
+//    qtwidget->setRowCount(rowCount);
+//    qtwidget->setColumnCount(colCount + 1); // +1 — столбец для ключей (AM)
+//
+//    // Заголовки столбцов
+//    QStringList headers;
+//    headers << "N";
+//    if (colCount > 0)
+//    {
+//        headers << QString("AM");
+//        if (colCount > 1)
+//        {
+//            headers << ColName;
+//        }
+//    }
+//
+//
+//    qtwidget->setHorizontalHeaderLabels(headers);
+//
+//    // Получим упорядоченные ключи
+//    QStringList keys = AMData[0].keys();
+//
+//    // Заполняем первую колонку (AM значения)
+//    for (int row = 0; row < rowCount; ++row) {
+//        qtwidget->setItem(row, 0, new QTableWidgetItem(keys[row]));
+//    }
+//
+//    // Заполняем значения статистики
+//    for (int col = 0; col < colCount; ++col) {
+//        const QMap<QString, int>& map = AMData[col];
+//        for (int row = 0; row < rowCount; ++row) {
+//            QString key = keys[row];
+//            int value = map.value(key, 0); // безопасно, даже если нет ключа
+//            qtwidget->setItem(row, col + 1, new QTableWidgetItem(QString::number(value)));
+//        }
+//    }
+//
+//    qtwidget->resizeColumnsToContents();
+//
+//
+//}
 
 QString clean(const QString& s) {
     QString result = s;
@@ -599,7 +657,18 @@ void SolarGeometryCalculatorNOAA::SaveAMElevation(QTableWidget* table, int Var)
     }
 
     file.close();
-    QString st = QString::fromUtf8(u8"Данные сохранены!");
+    QString st = QString::fromUtf8("Данные сохранены!");
     msgBox.setText(st);
     msgBox.exec();
+}
+
+
+void SolarGeometryCalculatorNOAA::on_showGraphsButton_clicked()
+{
+    if (!graphsWindow) {
+        graphsWindow = new PowerCellGraphs(this);
+    }
+    graphsWindow->show();
+    graphsWindow->raise();
+    graphsWindow->activateWindow();
 }

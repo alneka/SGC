@@ -21,6 +21,21 @@
       <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
       <Extensions>ts</Extensions>
     </Filter>
+    <Filter Include="Source Files\SolarSpectrumCalc">
+      <UniqueIdentifier>{bb8f958a-b8ca-4577-a904-13c0090beae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Cell">
+      <UniqueIdentifier>{3ca5eacf-3e6a-4b68-ba60-dfe2dedea2d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SGCNOAA">
+      <UniqueIdentifier>{8b01aa3b-8b40-40b9-a171-1c2423ece676}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\WinPowerGraphs">
+      <UniqueIdentifier>{6250d91c-9b6e-4a6c-9ced-7fda3a3a54d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Logic">
+      <UniqueIdentifier>{7069b595-4bad-4e84-9b29-974d71ef8a4c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="SolarGeometryCalculatorNOAA.qrc">
@@ -40,13 +55,71 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SGCNOAA.cpp">
+    <ClCompile Include="Save_solar_spectrum_calculator.cpp">
+      <Filter>Source Files\SolarSpectrumCalc</Filter>
+    </ClCompile>
+    <ClCompile Include="Solar_spectrum_calculator.cpp">
+      <Filter>Source Files\SolarSpectrumCalc</Filter>
+    </ClCompile>
+    <ClCompile Include="Spectr_gen.cpp">
+      <Filter>Source Files\SolarSpectrumCalc</Filter>
+    </ClCompile>
+    <ClCompile Include="info.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CheckSSC.cpp">
+      <Filter>Source Files\SolarSpectrumCalc</Filter>
+    </ClCompile>
+    <ClCompile Include="SGCNOAA.cpp">
+      <Filter>Source Files\SGCNOAA</Filter>
+    </ClCompile>
+    <ClCompile Include="SolarCell.cpp">
+      <Filter>Source Files\Cell</Filter>
+    </ClCompile>
+    <ClCompile Include="SolarCellInterface.cpp">
+      <Filter>Source Files\Cell</Filter>
+    </ClCompile>
+    <ClCompile Include="qcustomplot.cpp">
+      <Filter>Source Files\WinPowerGraphs</Filter>
+    </ClCompile>
+    <ClCompile Include="powercellgraphs.cpp">
+      <Filter>Source Files\WinPowerGraphs</Filter>
+    </ClCompile>
+    <ClCompile Include="SolarCellPowerLogic.cpp">
+      <Filter>Source Files\Logic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SGCNOAA.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\SGCNOAA</Filter>
     </ClInclude>
+    <ClInclude Include="Spectr_gen.h">
+      <Filter>Source Files\SolarSpectrumCalc</Filter>
+    </ClInclude>
+    <ClInclude Include="PNTransition.h">
+      <Filter>Source Files\Cell</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="Solar_spectrum_calculator.h">
+      <Filter>Source Files\SolarSpectrumCalc</Filter>
+    </QtMoc>
+    <QtMoc Include="SolarCell.h">
+      <Filter>Source Files\Cell</Filter>
+    </QtMoc>
+    <QtMoc Include="qcustomplot.h">
+      <Filter>Source Files\WinPowerGraphs</Filter>
+    </QtMoc>
+    <QtMoc Include="powercellgraphs.h">
+      <Filter>Source Files\WinPowerGraphs</Filter>
+    </QtMoc>
+    <QtMoc Include="SolarCellPowerLogic.h">
+      <Filter>Source Files\Logic</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="PowerCellGraphs.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
 </Project>

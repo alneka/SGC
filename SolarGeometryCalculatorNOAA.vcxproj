@@ -37,12 +37,12 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>6.4.1_msvc2019_64</QtInstall>
-    <QtModules>core;gui;printsupport;widgets</QtModules>
+    <QtModules>core;gui;widgets;concurrent;printsupport</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtInstall>6.4.1_msvc2019_64</QtInstall>
-    <QtModules>core;gui;printsupport;widgets</QtModules>
+    <QtModules>core;gui;widgets;concurrent;printsupport</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -89,7 +89,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PrecompiledHeaderFile>stdafx.h;</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
@@ -99,14 +100,15 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <QtMoc>
-      <PrependInclude>stdafx.h;%(PrependInclude)</PrependInclude>
+      <PrependInclude>%(PrependInclude)</PrependInclude>
     </QtMoc>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h;</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
@@ -120,11 +122,29 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <QtMoc>
-      <PrependInclude>stdafx.h;%(PrependInclude)</PrependInclude>
+      <PrependInclude>%(PrependInclude)</PrependInclude>
     </QtMoc>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CheckSSC.cpp" />
+    <ClCompile Include="info.cpp" />
+    <ClCompile Include="powercellgraphs.cpp" />
+    <ClCompile Include="qcustomplot.cpp" />
+    <ClCompile Include="Save_solar_spectrum_calculator.cpp" />
+    <ClCompile Include="SolarCell.cpp" />
+    <ClCompile Include="SolarCellInterface.cpp" />
+    <ClCompile Include="SolarCellPowerLogic.cpp" />
+    <ClCompile Include="Solar_spectrum_calculator.cpp" />
+    <ClCompile Include="Spectr_gen.cpp" />
+    <QtMoc Include="Solar_spectrum_calculator.h" />
+    <ClInclude Include="PNTransition.h" />
+    <QtMoc Include="SolarCell.h" />
+    <QtMoc Include="qcustomplot.h" />
+    <QtMoc Include="powercellgraphs.h" />
+    <QtMoc Include="SolarCellPowerLogic.h" />
+    <ClInclude Include="Spectr_gen.h" />
     <QtRcc Include="SolarGeometryCalculatorNOAA.qrc" />
+    <QtUic Include="PowerCellGraphs.ui" />
     <QtUic Include="SolarGeometryCalculatorNOAA.ui" />
     <QtMoc Include="SolarGeometryCalculatorNOAA.h" />
     <ClCompile Include="SGCNOAA.cpp" />
